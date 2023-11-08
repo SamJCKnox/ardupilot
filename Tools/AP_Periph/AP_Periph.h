@@ -142,6 +142,7 @@ public:
     void can_buzzer_update(void);
     void can_safety_button_update(void);
     void can_safety_LED_update(void);
+    void can_temp_update(void);
 
     void load_parameters();
     void prepare_reboot();
@@ -387,6 +388,9 @@ public:
 #endif
 #ifdef HAL_PERIPH_ENABLE_AIRSPEED
     uint32_t last_airspeed_update_ms;
+#endif
+#ifdef AP_TEMPERATURE_SENSOR_ENABLED
+    uint32_t last_temp_update_ms;
 #endif
 #ifdef HAL_PERIPH_ENABLE_GPS
     bool saw_gps_lock_once;

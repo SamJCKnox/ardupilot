@@ -1,0 +1,19 @@
+include ../MatekL431/hwdef.inc
+
+# ------------------ BATTERY Monitor -----------------------
+define HAL_PERIPH_ENABLE_BATTERY
+
+define AP_BATTERY_INA2XX_ENABLED 1
+
+# no ADC pins
+define HAL_USE_ADC FALSE
+
+# -------------------- TEMP--------------------
+define AP_TEMPERATURE_SENSOR_ENABLED 1
+define AP_TEMPERATURE_SENSOR_MCP9600_ENABLED 1
+
+# disable unnecessary threads
+define HAL_NO_MONITOR_THREAD
+define HAL_NO_RCIN_THREAD
+define HAL_NO_RCOUT_THREAD
+define HAL_NO_TIMER_THREAD

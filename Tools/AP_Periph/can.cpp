@@ -1775,6 +1775,9 @@ void AP_Periph_FW::can_update()
 #ifdef HAL_PERIPH_ENABLE_PROXIMITY
         can_proximity_update();
 #endif
+#ifdef AP_TEMPERATURE_SENSOR_ENABLED
+        can_temp_update();
+#endif
     #if defined(HAL_PERIPH_ENABLE_BUZZER_WITHOUT_NOTIFY) || defined (HAL_PERIPH_ENABLE_NOTIFY)
         can_buzzer_update();
     #endif
