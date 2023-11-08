@@ -16,24 +16,27 @@ void AP_Periph_FW::can_temp_update(void)
         return;
     }
     last_temp_update_ms = now;
+
     temperature_sensor.update();
-    if (!temperature_sensor.healthy()) {
+
+
+    const uint8_t temp_instances = temperature_sensor.num_instances();
+    for (uint8_t i=0; i<temp_instances; i++) {
+
+    if (!temperature_sensor.healthy(i)) {
         // don't send any data
         return;
     }
+
     float temp;
-    if(!temperature_sensor.get_temperature(temp)){
+    if(!temperature_sensor.get_temperature(temp, i)){
         return;
     }
 
     uavcan_equipment_device_Temperature pkt {};
 
-    // unfilled elements are NaN
-    pkt.temperature = nanf("");
-
-
-    // populate the elements we have
     pkt.temperature = temp;
+    pkt.device_id = temperature_sensor.get_source_id(i);
 
 
     uint8_t buffer[UAVCAN_EQUIPMENT_DEVICE_TEMPERATURE_MAX_SIZE] {};
@@ -44,6 +47,7 @@ void AP_Periph_FW::can_temp_update(void)
                     CANARD_TRANSFER_PRIORITY_LOW,
                     &buffer[0],
                     total_size);
+}
 }
 
 #endif // AP_TEMPERATURE_SENSOR_ENABLED
