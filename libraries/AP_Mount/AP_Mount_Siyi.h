@@ -27,7 +27,7 @@
 #include <AP_Math/AP_Math.h>
 #include <AP_Common/AP_Common.h>
 
-#define AP_MOUNT_SIYI_PACKETLEN_MAX     22  // maximum number of bytes in a packet sent to or received from the gimbal
+#define AP_MOUNT_SIYI_PACKETLEN_MAX     38  // maximum number of bytes in a packet sent to or received from the gimbal
 
 class AP_Mount_Siyi : public AP_Mount_Backend
 {
@@ -93,6 +93,12 @@ protected:
     // get attitude as a quaternion.  returns true on success
     bool get_attitude_quaternion(Quaternion& att_quat) override;
 
+    // get angular velocity of mount. Only available on some backends
+    bool get_angular_velocity(Vector3f& rates) override {
+        rates = _current_rates_rads;
+        return true;
+    }
+    
 private:
 
     // serial protocol command ids
@@ -111,6 +117,8 @@ private:
         ABSOLUTE_ZOOM = 0x0F,
         SET_CAMERA_IMAGE_TYPE = 0x11,
         READ_RANGEFINDER = 0x15,
+        EXTERNAL_ATTITUDE = 0x22,
+        SET_TIME = 0x30,
     };
 
     // Function Feedback Info packet info_type values
@@ -307,6 +315,7 @@ private:
 
     // actual attitude received from gimbal
     Vector3f _current_angle_rad;                    // current angles in radians received from gimbal (x=roll, y=pitch, z=yaw)
+    Vector3f _current_rates_rads;                   // current angular rates in rad/s (x=roll, y=pitch, z=yaw)
     uint32_t _last_current_angle_rad_ms;            // system time _current_angle_rad was updated
     uint32_t _last_req_current_angle_rad_ms;        // system time that this driver last requested current angle
 
@@ -324,12 +333,19 @@ private:
     uint32_t _last_rangefinder_dist_ms;             // system time of last successful read of rangefinder distance
     float _rangefinder_dist_m;                      // distance received from rangefinder
 
+    // sending of attitude to gimbal
+    uint32_t _last_attitude_send_ms;
+    void send_attitude(void);
+
     // hardware lookup table indexed by HardwareModel enum values (see above)
     struct HWInfo {
         uint8_t hwid[2];
         const char* model_name;
     };
     static const HWInfo hardware_lookup_table[];
+
+    // count of SET_TIME packets, we send 5 times to cope with packet loss
+    uint8_t sent_time_count;
 };
 
 #endif // HAL_MOUNT_SIYISERIAL_ENABLED

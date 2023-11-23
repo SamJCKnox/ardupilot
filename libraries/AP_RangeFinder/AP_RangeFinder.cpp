@@ -58,6 +58,7 @@
 #include "AP_RangeFinder_TOFSenseP_CAN.h"
 #include "AP_RangeFinder_NRA24_CAN.h"
 #include "AP_RangeFinder_TOFSenseF_I2C.h"
+#include "AP_RangeFinder_JRE_Serial.h"
 
 #include <AP_BoardConfig/AP_BoardConfig.h>
 #include <AP_Logger/AP_Logger.h>
@@ -219,6 +220,8 @@ void RangeFinder::init(enum Rotation orientation_default)
         // initialise status
         state[i].status = Status::NotConnected;
         state[i].range_valid_count = 0;
+        // initialize signal_quality_pct for drivers that don't handle it.
+        state[i].signal_quality_pct = SIGNAL_QUALITY_UNKNOWN;
     }
 }
 
@@ -575,6 +578,12 @@ void RangeFinder::detect_instance(uint8_t instance, uint8_t& serial_instance)
         break;
     }
 #endif
+#if AP_RANGEFINDER_JRE_SERIAL_ENABLED
+    case Type::JRE_Serial:
+        serial_create_fn = AP_RangeFinder_JRE_Serial::create;
+        break;
+#endif
+
     case Type::NONE:
         break;
     }
@@ -686,6 +695,15 @@ uint16_t RangeFinder::distance_cm_orient(enum Rotation orientation) const
     return distance_orient(orientation) * 100.0;
 }
 
+int8_t RangeFinder::signal_quality_pct_orient(enum Rotation orientation) const
+{
+    AP_RangeFinder_Backend *backend = find_instance(orientation);
+    if (backend == nullptr) {
+        return RangeFinder::SIGNAL_QUALITY_UNKNOWN;
+    }
+    return backend->signal_quality_pct();
+}
+
 int16_t RangeFinder::max_distance_cm_orient(enum Rotation orientation) const
 {
     AP_RangeFinder_Backend *backend = find_instance(orientation);
@@ -786,10 +804,6 @@ void RangeFinder::Log_RFND() const
             continue;
         }
 
-        int8_t signal_quality;
-        if (!s->get_signal_quality_pct(signal_quality)) {
-          signal_quality = -1;
-        }
         const struct log_RFND pkt = {
                 LOG_PACKET_HEADER_INIT(LOG_RFND_MSG),
                 time_us      : AP_HAL::micros64(),
@@ -797,7 +811,7 @@ void RangeFinder::Log_RFND() const
                 dist         : s->distance_cm(),
                 status       : (uint8_t)s->status(),
                 orient       : s->orientation(),
-                quality      : signal_quality,
+                quality      : s->signal_quality_pct(),
         };
         AP::logger().WriteBlock(&pkt, sizeof(pkt));
     }

@@ -41,6 +41,7 @@ uint8_t crc_sum8(const uint8_t *p, uint8_t len);
 // Copyright (C) 2010 Swift Navigation Inc.
 // Contact: Fergus Noble <fergus@swift-nav.com>
 uint16_t crc16_ccitt(const uint8_t *buf, uint32_t len, uint16_t crc);
+uint16_t crc16_ccitt_r(const uint8_t *buf, uint32_t len, uint16_t crc, uint16_t out);
 
 // CRC16_CCITT algorithm using the GDL90 parser method which is non-standard
 // https://www.faa.gov/nextgen/programs/adsb/archival/media/gdl90_public_icd_reva.pdf
@@ -60,3 +61,7 @@ uint64_t crc_crc64(const uint32_t *data, uint16_t num_words);
 // return the parity of byte - "1" if there is an odd number of bits
 // set, "0" if there is an even number of bits set
 uint8_t parity(uint8_t byte);
+
+// sums the bytes in the supplied buffer, returns that sum mod 256
+// (i.e. shoved into a uint8_t)
+uint8_t crc_sum_of_bytes(uint8_t *data, uint16_t count);

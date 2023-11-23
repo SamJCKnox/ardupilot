@@ -6,6 +6,7 @@
 #include <GCS_MAVLink/GCS.h>
 #include <GCS_MAVLink/include/mavlink/v2.0/checksum.h>
 #include <AP_SerialManager/AP_SerialManager.h>
+#include <AP_RTC/AP_RTC.h>
 
 extern const AP_HAL::HAL& hal;
 
@@ -68,6 +69,17 @@ void AP_Mount_Siyi::update()
         } else {
             request_configuration();
         }
+
+#if AP_RTC_ENABLED
+        // send UTC time to the camera
+        if (sent_time_count < 5) {
+            uint64_t utc_usec;
+            if (AP::rtc().get_utc_usec(utc_usec) &&
+                send_packet(SiyiCommandId::SET_TIME, (const uint8_t *)&utc_usec, sizeof(utc_usec))) {
+                sent_time_count++;
+            }
+        }
+#endif
     }
 
     // request attitude at regular intervals
@@ -80,6 +92,12 @@ void AP_Mount_Siyi::update()
     if ((_hardware_model == HardwareModel::ZT30) && (now_ms - _last_rangefinder_req_ms > 100)) {
         request_rangefinder_distance();
         _last_rangefinder_req_ms = now_ms;
+    }
+
+    // send attitude to gimbal at 10Hz
+    if (now_ms - _last_attitude_send_ms > 100) {
+        _last_attitude_send_ms = now_ms;
+        send_attitude();
     }
 
     // run zoom control
@@ -522,9 +540,9 @@ void AP_Mount_Siyi::process_packet()
         _current_angle_rad.z = -radians((int16_t)UINT16_VALUE(_msg_buff[_msg_buff_data_start+1], _msg_buff[_msg_buff_data_start]) * 0.1);   // yaw angle
         _current_angle_rad.y = radians((int16_t)UINT16_VALUE(_msg_buff[_msg_buff_data_start+3], _msg_buff[_msg_buff_data_start+2]) * 0.1);  // pitch angle
         _current_angle_rad.x = radians((int16_t)UINT16_VALUE(_msg_buff[_msg_buff_data_start+5], _msg_buff[_msg_buff_data_start+4]) * 0.1);  // roll angle
-        //const float yaw_rate_degs = -(int16_t)UINT16_VALUE(_msg_buff[_msg_buff_data_start+7], _msg_buff[_msg_buff_data_start+6]) * 0.1;   // yaw rate
-        //const float pitch_rate_deg = (int16_t)UINT16_VALUE(_msg_buff[_msg_buff_data_start+9], _msg_buff[_msg_buff_data_start+8]) * 0.1;   // pitch rate
-        //const float roll_rate_deg = (int16_t)UINT16_VALUE(_msg_buff[_msg_buff_data_start+11], _msg_buff[_msg_buff_data_start+10]) * 0.1;  // roll rate
+        _current_rates_rads.z = -radians((int16_t)UINT16_VALUE(_msg_buff[_msg_buff_data_start+7], _msg_buff[_msg_buff_data_start+6]) * 0.1);   // yaw rate
+        _current_rates_rads.y = radians((int16_t)UINT16_VALUE(_msg_buff[_msg_buff_data_start+9], _msg_buff[_msg_buff_data_start+8]) * 0.1);   // pitch rate
+        _current_rates_rads.x = radians((int16_t)UINT16_VALUE(_msg_buff[_msg_buff_data_start+11], _msg_buff[_msg_buff_data_start+10]) * 0.1);  // roll rate
         break;
     }
 
@@ -1085,6 +1103,33 @@ void AP_Mount_Siyi::check_firmware_version() const
             minimum_ver.camera.major, minimum_ver.camera.minor, minimum_ver.camera.patch
         );
     }
+}
+
+/*
+ send ArduPilot attitude to gimbal
+*/
+void AP_Mount_Siyi::send_attitude(void)
+{
+    const auto &ahrs = AP::ahrs();
+    struct {
+        uint32_t time_boot_ms;
+        float roll, pitch, yaw;
+        float rollspeed, pitchspeed, yawspeed;
+    } attitude;
+
+    // get attitude as euler 321
+    const auto &gyro = ahrs.get_gyro();
+    const uint32_t now_ms = AP_HAL::millis();
+
+    attitude.time_boot_ms = now_ms;
+    attitude.roll = ahrs.roll;
+    attitude.pitch = ahrs.pitch;
+    attitude.yaw = ahrs.yaw;
+    attitude.rollspeed = gyro.x;
+    attitude.pitchspeed = gyro.y;
+    attitude.yawspeed = gyro.z;
+
+    send_packet(SiyiCommandId::EXTERNAL_ATTITUDE, (const uint8_t *)&attitude, sizeof(attitude));
 }
 
 #endif // HAL_MOUNT_SIYI_ENABLED

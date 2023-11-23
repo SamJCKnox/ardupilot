@@ -233,6 +233,12 @@ SITL::SerialDevice *SITL_State_Common::create_serial_sim(const char *name, const
         sitl_model->set_ie24(&_sitl->ie24_sim);
         return &_sitl->ie24_sim;
 #endif // HAL_BUILD_AP_PERIPH
+    } else if (streq(name, "jre")) {
+        if (jre != nullptr) {
+            AP_HAL::panic("Only one jre at a time");
+        }
+        jre = new SITL::RF_JRE();
+        return jre;
     } else if (streq(name, "gyus42v2")) {
         if (gyus42v2 != nullptr) {
             AP_HAL::panic("Only one gyus42v2 at a time");
@@ -245,6 +251,12 @@ SITL::SerialDevice *SITL_State_Common::create_serial_sim(const char *name, const
         }
         efi_ms = new SITL::EFI_MegaSquirt();
         return efi_ms;
+    } else if (streq(name, "hirth")) {
+        if (efi_hirth != nullptr) {
+            AP_HAL::panic("Only one hirth at a time");
+        }
+        efi_hirth = new SITL::EFI_Hirth();
+        return efi_hirth;
     } else if (streq(name, "VectorNav")) {
         if (vectornav != nullptr) {
             AP_HAL::panic("Only one VectorNav at a time");
@@ -315,6 +327,9 @@ void SITL_State_Common::sim_update(void)
     if (benewake_tfmini != nullptr) {
         benewake_tfmini->update(sitl_model->rangefinder_range());
     }
+    if (jre != nullptr) {
+        jre->update(sitl_model->rangefinder_range());
+    }
     if (nooploop != nullptr) {
         nooploop->update(sitl_model->rangefinder_range());
     }
@@ -362,6 +377,9 @@ void SITL_State_Common::sim_update(void)
     }
     if (efi_ms != nullptr) {
         efi_ms->update();
+    }
+    if (efi_hirth != nullptr) {
+        efi_hirth->update();
     }
 
     if (frsky_d != nullptr) {
