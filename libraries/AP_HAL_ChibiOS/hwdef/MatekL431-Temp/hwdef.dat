@@ -2,6 +2,8 @@ include ../MatekL431/hwdef.inc
 
 # ------------------ BATTERY Monitor -----------------------
 define HAL_PERIPH_ENABLE_BATTERY
+define AP_BATT_MONITOR_MAX_INSTANCES 9
+
 
 define AP_BATTERY_INA2XX_ENABLED 1
 
