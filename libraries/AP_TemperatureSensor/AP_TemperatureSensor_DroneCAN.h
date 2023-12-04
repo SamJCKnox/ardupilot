@@ -1,7 +1,9 @@
 #pragma once
 
 #include "AP_TemperatureSensor_config.h"
-#if HAL_ENABLE_DRONECAN_DRIVER
+
+#if AP_TEMPERATURE_SENSOR_DRONECAN_ENABLED
+
 #include<AP_DroneCAN/AP_DroneCAN.h>
 
 #define CAN_TEMPERATURE_TIMEOUT_MS 5000000

@@ -29,6 +29,7 @@
 #include "AP_TemperatureSensor_MCP9600.h"
 #include "AP_TemperatureSensor_MAX31865.h"
 #include "AP_TemperatureSensor_Analog.h"
+#include "AP_TemperatureSensor_DroneCAN.h"
 
 #include <AP_Logger/AP_Logger.h>
 #include <AP_Vehicle/AP_Vehicle_Type.h>

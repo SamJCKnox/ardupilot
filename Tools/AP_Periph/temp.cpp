@@ -1,6 +1,6 @@
 #include "AP_Periph.h"
 
-#ifdef AP_TEMPERATURE_SENSOR_ENABLED
+#ifdef HAL_PERIPH_ENABLE_TEMP
 
 #include <dronecan_msgs.h>
 
@@ -50,4 +50,4 @@ void AP_Periph_FW::can_temp_update(void)
 }
 }
 
-#endif // AP_TEMPERATURE_SENSOR_ENABLED
+#endif // HAL_PERIPH_ENABLE_TEMP

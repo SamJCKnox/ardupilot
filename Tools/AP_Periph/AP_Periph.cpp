@@ -42,7 +42,7 @@ AP_Periph_FW periph;
 void setup();
 void loop();
 
-const AP_HAL::HAL& hal = AP_HAL::get_HAL();
+const AP_HAL::HAL &hal = AP_HAL::get_HAL();
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
 void stm32_watchdog_init() {}
@@ -66,7 +66,8 @@ AP_Periph_FW::AP_Periph_FW()
     : logger(g.log_bitmask)
 #endif
 {
-    if (_singleton != nullptr) {
+    if (_singleton != nullptr)
+    {
         AP_HAL::panic("AP_Periph_FW must be singleton");
     }
     _singleton = this;
@@ -80,7 +81,7 @@ const struct LogStructure AP_Periph_FW::log_structure[] = {
 
 void AP_Periph_FW::init()
 {
-    
+
     // always run with watchdog enabled. This should have already been
     // setup by the bootloader, but if not then enable now
 #ifndef DISABLE_WATCHDOG
@@ -132,7 +133,8 @@ void AP_Periph_FW::init()
 
     check_firmware_print();
 
-    if (hal.util->was_watchdog_reset()) {
+    if (hal.util->was_watchdog_reset())
+    {
         printf("Reboot after watchdog reset\n");
     }
 
@@ -141,10 +143,11 @@ void AP_Periph_FW::init()
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_GPS
-    if (gps.get_type(0) != AP_GPS::GPS_Type::GPS_TYPE_NONE && g.gps_port >= 0) {
+    if (gps.get_type(0) != AP_GPS::GPS_Type::GPS_TYPE_NONE && g.gps_port >= 0)
+    {
         serial_manager.set_protocol_and_baud(g.gps_port, AP_SerialManager::SerialProtocol_GPS, AP_SERIALMANAGER_GPS_BAUD);
 #if HAL_LOGGING_ENABLED
-        #define MASK_LOG_GPS (1<<2)
+#define MASK_LOG_GPS (1 << 2)
         gps.set_log_gps_bit(MASK_LOG_GPS);
 #endif
         gps.init(serial_manager);
@@ -184,9 +187,11 @@ void AP_Periph_FW::init()
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_EFI
-    if (efi.enabled() && g.efi_port >= 0) {
+    if (efi.enabled() && g.efi_port >= 0)
+    {
         auto *uart = hal.serial(g.efi_port);
-        if (uart != nullptr) {
+        if (uart != nullptr)
+        {
             uart->begin(g.efi_baudrate);
             serial_manager.set_protocol_and_baud(g.efi_port, AP_SerialManager::SerialProtocol_EFI, g.efi_baudrate);
             efi.init();
@@ -201,12 +206,15 @@ void AP_Periph_FW::init()
 #ifdef HAL_PERIPH_ENABLE_AIRSPEED
 #if CONFIG_HAL_BOARD == HAL_BOARD_CHIBIOS
     const bool pins_enabled = ChibiOS::I2CBus::check_select_pins(0x01);
-    if (pins_enabled) {
+    if (pins_enabled)
+    {
         ChibiOS::I2CBus::set_bus_to_floating(0);
 #ifdef HAL_GPIO_PIN_LED_CAN_I2C
         palWriteLine(HAL_GPIO_PIN_LED_CAN_I2C, 1);
 #endif
-    } else {
+    }
+    else
+    {
         // Note: logging of ARSPD is not enabled currently. To enable, call airspeed.set_log_bit(); here
         airspeed.init();
     }
@@ -218,11 +226,14 @@ void AP_Periph_FW::init()
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_RANGEFINDER
-    if (rangefinder.get_type(0) != RangeFinder::Type::NONE) {
-        if (g.rangefinder_port >= 0) {
+    if (rangefinder.get_type(0) != RangeFinder::Type::NONE)
+    {
+        if (g.rangefinder_port >= 0)
+        {
             // init uart for serial rangefinders
             auto *uart = hal.serial(g.rangefinder_port);
-            if (uart != nullptr) {
+            if (uart != nullptr)
+            {
                 uart->begin(g.rangefinder_baud);
                 serial_manager.set_protocol_and_baud(g.rangefinder_port, AP_SerialManager::SerialProtocol_Rangefinder, g.rangefinder_baud);
             }
@@ -232,9 +243,11 @@ void AP_Periph_FW::init()
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_PROXIMITY
-    if (proximity.get_type(0) != AP_Proximity::Type::None && g.proximity_port >= 0) {
+    if (proximity.get_type(0) != AP_Proximity::Type::None && g.proximity_port >= 0)
+    {
         auto *uart = hal.serial(g.proximity_port);
-        if (uart != nullptr) {
+        if (uart != nullptr)
+        {
             uart->begin(g.proximity_baud);
             serial_manager.set_protocol_and_baud(g.proximity_port, AP_SerialManager::SerialProtocol_Lidar360, g.proximity_baud);
             proximity.init();
@@ -251,21 +264,24 @@ void AP_Periph_FW::init()
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_ESC_APD
-    for (uint8_t i = 0; i < ESC_NUMBERS; i++) {
+    for (uint8_t i = 0; i < ESC_NUMBERS; i++)
+    {
         const uint8_t port = g.esc_serial_port[i];
-        if (port < SERIALMANAGER_NUM_PORTS) { // skip bad ports
-            apd_esc_telem[i] = new ESC_APD_Telem (hal.serial(port), g.pole_count[i]);
+        if (port < SERIALMANAGER_NUM_PORTS)
+        { // skip bad ports
+            apd_esc_telem[i] = new ESC_APD_Telem(hal.serial(port), g.pole_count[i]);
         }
     }
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_MSP
-    if (g.msp_port >= 0) {
+    if (g.msp_port >= 0)
+    {
         msp_init(hal.serial(g.msp_port));
     }
 #endif
-    
-#if AP_TEMPERATURE_SENSOR_ENABLED
+
+#ifdef HAL_PERIPH_ENABLE_TEMP
     temperature_sensor.init();
 #endif
 
@@ -294,18 +310,21 @@ void AP_Periph_FW::init()
 void AP_Periph_FW::update_rainbow()
 {
 #ifdef HAL_PERIPH_ENABLE_NOTIFY
-    if (notify.get_led_len() != 8) {
+    if (notify.get_led_len() != 8)
+    {
         return;
     }
 #endif
     static bool rainbow_done;
-    if (rainbow_done) {
+    if (rainbow_done)
+    {
         return;
     }
     uint32_t now = AP_HAL::millis();
-    if (now - start_ms > 1500) {
+    if (now - start_ms > 1500)
+    {
         rainbow_done = true;
-#if defined (HAL_PERIPH_ENABLE_NOTIFY)
+#if defined(HAL_PERIPH_ENABLE_NOTIFY)
         periph.notify.handle_rgb(0, 0, 0);
 #elif defined(HAL_PERIPH_NEOPIXEL_CHAN_WITHOUT_NOTIFY)
         hal.rcout->set_serial_led_rgb_data(HAL_PERIPH_NEOPIXEL_CHAN_WITHOUT_NOTIFY, -1, 0, 0, 0);
@@ -315,37 +334,40 @@ void AP_Periph_FW::update_rainbow()
     }
     static uint32_t last_update_ms;
     const uint8_t step_ms = 30;
-    if (now - last_update_ms < step_ms) {
+    if (now - last_update_ms < step_ms)
+    {
         return;
     }
-    const struct {
+    const struct
+    {
         uint8_t red;
         uint8_t green;
         uint8_t blue;
     } rgb_rainbow[] = {
-        { 255, 0, 0 },
-        { 255, 127, 0 },
-        { 255, 255, 0 },
-        { 0,   255, 0 },
-        { 0,   0,   255 },
-        { 75,  0,   130 },
-        { 143, 0,   255 },
-        { 0,   0,   0 },
+        {255, 0, 0},
+        {255, 127, 0},
+        {255, 255, 0},
+        {0, 255, 0},
+        {0, 0, 255},
+        {75, 0, 130},
+        {143, 0, 255},
+        {0, 0, 0},
     };
     last_update_ms = now;
     static uint8_t step;
     const uint8_t nsteps = ARRAY_SIZE(rgb_rainbow);
     float brightness = 0.3;
-    for (uint8_t n=0; n<8; n++) {
+    for (uint8_t n = 0; n < 8; n++)
+    {
         uint8_t i = (step + n) % nsteps;
-#if defined (HAL_PERIPH_ENABLE_NOTIFY)
+#if defined(HAL_PERIPH_ENABLE_NOTIFY)
         periph.notify.handle_rgb(
 #elif defined(HAL_PERIPH_NEOPIXEL_CHAN_WITHOUT_NOTIFY)
         hal.rcout->set_serial_led_rgb_data(HAL_PERIPH_NEOPIXEL_CHAN_WITHOUT_NOTIFY, n,
 #endif
-                                        rgb_rainbow[i].red*brightness,
-                                        rgb_rainbow[i].green*brightness,
-                                        rgb_rainbow[i].blue*brightness);
+            rgb_rainbow[i].red * brightness,
+            rgb_rainbow[i].green * brightness,
+            rgb_rainbow[i].blue * brightness);
     }
     step++;
 
@@ -355,19 +377,22 @@ void AP_Periph_FW::update_rainbow()
 }
 #endif // HAL_PERIPH_ENABLE_NOTIFY
 
-
 #if CONFIG_HAL_BOARD == HAL_BOARD_CHIBIOS && CH_DBG_ENABLE_STACK_CHECK == TRUE
 void AP_Periph_FW::show_stack_free()
 {
     const uint32_t isr_stack_size = uint32_t((const uint8_t *)&__main_stack_end__ - (const uint8_t *)&__main_stack_base__);
     can_printf("ISR %u/%u", unsigned(stack_free(&__main_stack_base__)), unsigned(isr_stack_size));
 
-    for (thread_t *tp = chRegFirstThread(); tp; tp = chRegNextThread(tp)) {
+    for (thread_t *tp = chRegFirstThread(); tp; tp = chRegNextThread(tp))
+    {
         uint32_t total_stack;
-        if (tp->wabase == (void*)&__main_thread_stack_base__) {
+        if (tp->wabase == (void *)&__main_thread_stack_base__)
+        {
             // main thread has its stack separated from the thread context
             total_stack = uint32_t((const uint8_t *)&__main_thread_stack_end__ - (const uint8_t *)&__main_thread_stack_base__);
-        } else {
+        }
+        else
+        {
             // all other threads have their thread context pointer
             // above the stack top
             total_stack = uint32_t(tp) - uint32_t(tp->wabase);
@@ -377,8 +402,6 @@ void AP_Periph_FW::show_stack_free()
 }
 #endif
 
-
-
 void AP_Periph_FW::update()
 {
 #if AP_STATS_ENABLED
@@ -387,10 +410,12 @@ void AP_Periph_FW::update()
 
     static uint32_t last_led_ms;
     uint32_t now = AP_HAL::millis();
-    if (now - last_led_ms > 1000) {
+    if (now - last_led_ms > 1000)
+    {
         last_led_ms = now;
 #ifdef HAL_GPIO_PIN_LED
-        if (!no_iface_finished_dna) {
+        if (!no_iface_finished_dna)
+        {
             palToggleLine(HAL_GPIO_PIN_LED);
         }
 #endif
@@ -428,7 +453,8 @@ void AP_Periph_FW::update()
 
     static uint32_t last_error_ms;
     const auto &ierr = AP::internalerror();
-    if (now - last_error_ms > 5000 && ierr.errors()) {
+    if (now - last_error_ms > 5000 && ierr.errors())
+    {
         // display internal errors as DEBUG every 5s
         last_error_ms = now;
         can_printf("IERR 0x%x %u", unsigned(ierr.errors()), unsigned(ierr.last_error_line()));
@@ -436,13 +462,15 @@ void AP_Periph_FW::update()
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_CHIBIOS && CH_DBG_ENABLE_STACK_CHECK == TRUE
     static uint32_t last_debug_ms;
-    if (debug_option_is_set(DebugOptions::SHOW_STACK) && now - last_debug_ms > 5000) {
+    if (debug_option_is_set(DebugOptions::SHOW_STACK) && now - last_debug_ms > 5000)
+    {
         last_debug_ms = now;
         show_stack_free();
     }
 #endif
 
-    if (debug_option_is_set(DebugOptions::AUTOREBOOT) && AP_HAL::millis() > 15000) {
+    if (debug_option_is_set(DebugOptions::AUTOREBOOT) && AP_HAL::millis() > 15000)
+    {
         // attempt reboot with HOLD after 15s
         periph.prepare_reboot();
 #if CONFIG_HAL_BOARD == HAL_BOARD_CHIBIOS
@@ -452,7 +480,8 @@ void AP_Periph_FW::update()
     }
 
 #ifdef HAL_PERIPH_ENABLE_BATTERY
-    if (now - battery.last_read_ms >= 100) {
+    if (now - battery.last_read_ms >= 100)
+    {
         // update battery at 10Hz
         battery.last_read_ms = now;
         battery_lib.read();
@@ -466,9 +495,10 @@ void AP_Periph_FW::update()
 #ifdef HAL_PERIPH_ENABLE_BATTERY_BALANCE
     batt_balance_update();
 #endif
-    
+
     static uint32_t fiftyhz_last_update_ms;
-    if (now - fiftyhz_last_update_ms >= 20) {
+    if (now - fiftyhz_last_update_ms >= 20)
+    {
         // update at 50Hz
         fiftyhz_last_update_ms = now;
 #ifdef HAL_PERIPH_ENABLE_NOTIFY
@@ -484,12 +514,13 @@ void AP_Periph_FW::update()
     nmea.update();
 #endif
 
-#if AP_TEMPERATURE_SENSOR_ENABLED
+#ifdef HAL_PERIPH_ENABLE_TEMP
     temperature_sensor.update();
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_RPM
-    if (now - rpm_last_update_ms >= 100) {
+    if (now - rpm_last_update_ms >= 100)
+    {
         rpm_last_update_ms = now;
         rpm_sensor.update();
     }
@@ -528,35 +559,42 @@ void AP_Periph_FW::check_for_serial_reboot_cmd(const int8_t serial_index)
     //            self.__send(uploader.NSH_INIT)
     //            self.__send(uploader.NSH_REBOOT)
 
-    for (uint8_t i=0; i<hal.num_serial; i++) {
-        if (serial_index >= 0 && serial_index != i) {
+    for (uint8_t i = 0; i < hal.num_serial; i++)
+    {
+        if (serial_index >= 0 && serial_index != i)
+        {
             // a specific serial port was selected but this is not it
             continue;
         }
 
         auto *uart = hal.serial(i);
-        if (uart == nullptr || !uart->is_initialized()) {
+        if (uart == nullptr || !uart->is_initialized())
+        {
             continue;
         }
 
         uint32_t available = MIN(uart->available(), 1000U);
-        while (available-- > 0) {
+        while (available-- > 0)
+        {
             const char reboot_string[] = "\r\r\rreboot -b\n\r\r\rreboot\n";
-            const char reboot_string_len = sizeof(reboot_string)-1; // -1 is to remove the null termination
+            const char reboot_string_len = sizeof(reboot_string) - 1; // -1 is to remove the null termination
             static uint16_t index[hal.num_serial];
 
             uint8_t data;
-            if (!uart->read(data)) {
+            if (!uart->read(data))
+            {
                 // read error
                 continue;
             }
-            if (index[i] >= reboot_string_len || (uint8_t)data != reboot_string[index[i]]) {
+            if (index[i] >= reboot_string_len || (uint8_t)data != reboot_string[index[i]])
+            {
                 // don't have a perfect match, start over
                 index[i] = 0;
                 continue;
             }
             index[i]++;
-            if (index[i] == reboot_string_len) {
+            if (index[i] == reboot_string_len)
+            {
                 // received reboot msg. Trigger a reboot and stay in the bootloader
                 prepare_reboot();
                 hal.scheduler->reboot(true);
@@ -571,24 +609,24 @@ void AP_Periph_FW::check_for_serial_reboot_cmd(const int8_t serial_index)
 void AP_Periph_FW::prepare_reboot()
 {
 #ifdef HAL_PERIPH_ENABLE_RC_OUT
-        // force safety on
-        hal.rcout->force_safety_on();
+    // force safety on
+    hal.rcout->force_safety_on();
 #endif
 
-        // flush pending parameter writes
-        AP_Param::flush();
+    // flush pending parameter writes
+    AP_Param::flush();
 
-        // do not process incoming mavlink messages while we delay:
-        hal.scheduler->register_delay_callback(nullptr, 5);
+    // do not process incoming mavlink messages while we delay:
+    hal.scheduler->register_delay_callback(nullptr, 5);
 
-        // delay to give the ACK a chance to get out, the LEDs to flash,
-        // the IO board safety to be forced on, the parameters to flush,
-        hal.scheduler->delay(40);
+    // delay to give the ACK a chance to get out, the LEDs to flash,
+    // the IO board safety to be forced on, the parameters to flush,
+    hal.scheduler->delay(40);
 }
 
 AP_Periph_FW *AP_Periph_FW::_singleton;
 
-AP_Periph_FW& AP::periph()
+AP_Periph_FW &AP::periph()
 {
     return *AP_Periph_FW::get_singleton();
 }

@@ -1,6 +1,6 @@
 #include "AP_TemperatureSensor_config.h"
 
-#ifdef AP_BATTERY_UAVCAN_TEMP_ENABLED
+#ifdef AP_TEMPERATURE_SENSOR_DRONECAN_ENABLED
 
 #include <AP_HAL/AP_HAL.h>
 #include "AP_TemperatureSensor_DroneCAN.h"

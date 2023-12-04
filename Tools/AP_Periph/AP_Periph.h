@@ -324,7 +324,7 @@ public:
     BattBalance battery_balance;
 #endif
     
-#if AP_TEMPERATURE_SENSOR_ENABLED
+#ifdef HAL_PERIPH_ENABLE_TEMP
     AP_TemperatureSensor temperature_sensor;
 #endif
 
@@ -389,7 +389,7 @@ public:
 #ifdef HAL_PERIPH_ENABLE_AIRSPEED
     uint32_t last_airspeed_update_ms;
 #endif
-#ifdef AP_TEMPERATURE_SENSOR_ENABLED
+#ifdef HAL_PERIPH_ENABLE_TEMP
     uint32_t last_temp_update_ms;
 #endif
 #ifdef HAL_PERIPH_ENABLE_GPS
