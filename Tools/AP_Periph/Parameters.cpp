@@ -400,7 +400,7 @@ const AP_Param::Info AP_Periph_FW::var_info[] = {
 #endif
 #endif
 
-#if AP_TEMPERATURE_SENSOR_ENABLED
+#ifdef HAL_PERIPH_ENABLE_TEMP
     // @Group: TEMP
     // @Path: ../libraries/AP_TemperatureSensor/AP_TemperatureSensor.cpp
     GOBJECT(temperature_sensor,         "TEMP",     AP_TemperatureSensor),
