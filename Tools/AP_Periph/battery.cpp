@@ -2,6 +2,45 @@
 
 #ifdef HAL_PERIPH_ENABLE_BATTERY
 
+/*
+  battery support
+ */
+
+#include <dronecan_msgs.h>
+
+extern const AP_HAL::HAL &hal;
+
+#ifndef AP_PERIPH_BATTERY_MODEL_NAME
+#define AP_PERIPH_BATTERY_MODEL_NAME CAN_APP_NODE_NAME
+#endif
+
+/*
+  update CAN battery monitor
+ */
+void AP_Periph_FW::can_battery_update(void)
+{
+    const uint32_t now_ms = AP_HAL::millis();
+    if (now_ms - battery.last_can_send_ms < 100) {
+        return;
+    }
+    battery.last_can_send_ms = now_ms;
+
+    const uint8_t battery_instances = battery_lib.num_instances();
+    for (uint8_t i=0; i<battery_instances; i++) {
+        if (BIT_IS_SET(g.battery_hide_mask, i)) {
+            // do not transmit this battery
+            continue;
+        }
+        if (!battery_lib.healthy(i)) {
+            continue;
+        }
+
+        uavcan_equipment_power_BatteryInfo pkt {};
+
+        // if a battery serial number is assigned, use that as the ID. Else, use the index.
+        const int32_t serial_number = battery_lib.get_serial_number(i);
+        pkt.battery_id = (serial_number >= 0) ? serial_number : i+1;
+
         pkt.voltage = battery_lib.voltage(i);
 
         float current;
