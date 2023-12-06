@@ -1,93 +1,85 @@
-// #include "AP_TemperatureSensor_config.h"
+#include "AP_TemperatureSensor_DroneCAN.h"
 
-// #if AP_TEMPERATURE_SENSOR_DRONECAN_ENABLED
+#if AP_TEMPERATURE_SENSOR_DRONECAN_ENABLED
 
-// #include <AP_HAL/AP_HAL.h>
-// #include "AP_TemperatureSensor_DroneCAN.h"
-// #include <AP_DroneCAN/AP_DroneCAN.h>
+#include <AP_CANManager/AP_CANManager.h>
+#include <AP_Math/AP_Math.h>
+#include <AP_DroneCAN/AP_DroneCAN.h>
+#include <AP_BoardConfig/AP_BoardConfig.h>
 
-// #include <AP_CANManager/AP_CANManager.h>
-// #include <AP_Common/AP_Common.h>
-// #include <GCS_MAVLink/GCS.h>
-// #include <AP_Math/AP_Math.h>
-// #include <AP_DroneCAN/AP_DroneCAN.h>
-// #include <AP_BoardConfig/AP_BoardConfig.h>
+extern const AP_HAL::HAL& hal;
 
-// #define LOG_TAG "Temp"
+#define LOG_TAG "Temp"
 
-// extern const AP_HAL::HAL& hal;
+AP_TemperatureSensor_DroneCAN::DetectedModules AP_TemperatureSensor_DroneCAN::_detected_modules[];
 
-// class AP_TemperatureSensor_DroneCAN : public AP_TemperatureSensor {
-// public:
-//     AP_TemperatureSensor_DroneCAN(CANBus* canbus);
+HAL_Semaphore AP_TemperatureSensor_DroneCAN::_sem_registry;
 
-//     float read() override;
-//     void calibrate(float temp) override;
-//     void set_offset(float offset) override;
-//     void set_scale(float scale) override;
-//     void save_calibration() override;
-//     void load_calibration() override;
-//     void reset_calibration() override;
+void AP_TemperatureSensor_DroneCAN::subscribe_msgs(AP_DroneCAN* ap_dronecan)
+{
+    if (ap_dronecan == nullptr) {
+        return;
+    }
 
-// private:
-//     CANBus* _canbus;
-//     float _offset;
-//     float _scale;
-// };
+    if (Canard::allocate_sub_arg_callback(ap_dronecan, &handle_temperature, ap_dronecan->get_driver_index()) == nullptr) {
+        AP_BoardConfig::allocation_error("temperature_sensor_sub");
+    }
+}
 
-// AP_TemperatureSensor_DroneCAN::AP_TemperatureSensor_DroneCAN(CANBus* canbus)
-//     : _canbus(canbus), _offset(0), _scale(1)
-// {
-//     // Set default temperature sensor parameters
-//     _min_temp = -40;
-//     _max_temp = 125;
-//     _default_offset = 0;
-//     _default_scale = 1;
-// }
+void AP_TemperatureSensor_DroneCAN::init()
+{
+    // always returns true
+    return;
 
-// float AP_TemperatureSensor_DroneCAN::read()
-// {
-//     // Read temperature sensor data from CAN bus
-//     float temp = 0;
-//     // TODO: Implement CAN bus read
-//     return temp;
-// }
+}
 
-// void AP_TemperatureSensor_DroneCAN::calibrate(float temp)
-// {
-//     // Calibrate temperature sensor
-//     _offset = temp - read();
-// }
+AP_TemperatureSensor_DroneCAN* AP_TemperatureSensor_DroneCAN::get_dronecan_backend(AP_DroneCAN* ap_dronecan, uint8_t node_id)
+{
+    if (ap_dronecan == nullptr) {
+        return nullptr;
+    }
 
-// void AP_TemperatureSensor_DroneCAN::set_offset(float offset)
-// {
-//     // Set temperature sensor offset
-//     _offset = offset;
-// }
+    for (uint8_t i = 0; i < AP_TEMPERATURE_SENSOR_MAX_INSTANCES; i++) {
+        if (_detected_modules[i].driver != nullptr &&
+            _detected_modules[i].ap_dronecan == ap_dronecan &&
+            _detected_modules[i].node_id == node_id ) {
+            return _detected_modules[i].driver;
+        }
+    }
 
-// void AP_TemperatureSensor_DroneCAN::set_scale(float scale)
-// {
-//     // Set temperature sensor scale
-//     _scale = scale;
-// }
+    bool detected = false;
+    for (uint8_t i = 0; i < AP_TEMPERATURE_SENSOR_MAX_INSTANCES; i++) {
+        if (_detected_modules[i].ap_dronecan == ap_dronecan && _detected_modules[i].node_id == node_id) {
+            // detected
+            detected = true;
+            break;
+        }
+    }
 
-// void AP_TemperatureSensor_DroneCAN::save_calibration()
-// {
-//     // Save temperature sensor calibration data to EEPROM
-//     // TODO: Implement EEPROM save
-// }
+    if (!detected) {
+        for (uint8_t i = 0; i < AP_TEMPERATURE_SENSOR_MAX_INSTANCES; i++) {
+            if (_detected_modules[i].ap_dronecan == nullptr) {
+                _detected_modules[i].ap_dronecan = ap_dronecan;
+                _detected_modules[i].node_id = node_id;
+                break;
+            }
+        }
+    }
 
-// void AP_TemperatureSensor_DroneCAN::load_calibration()
-// {
-//     // Load temperature sensor calibration data from EEPROM
-//     // TODO: Implement EEPROM load
-// }
+    return nullptr;
+}
 
-// void AP_TemperatureSensor_DroneCAN::reset_calibration()
-// {
-//     // Reset temperature sensor calibration data to default values
-//     _offset = _default_offset;
-//     _scale = _default_scale;
-// }
+void AP_TemperatureSensor_DroneCAN::handle_temperature(AP_DroneCAN *ap_dronecan, const CanardRxTransfer& transfer, const uavcan_equipment_device_Temperature &msg)
+{
+    WITH_SEMAPHORE(_sem_registry);
 
-// #endif // AP_BATTERY_UAVCAN_TEMP_ENABLED
+    AP_TemperatureSensor_DroneCAN* driver = get_dronecan_backend(ap_dronecan, transfer.source_node_id);
+
+    if (driver != nullptr) {
+        WITH_SEMAPHORE(driver->_sem_temperature);
+        driver->_temperature = KELVIN_TO_C(msg.temperature);
+    }
+}
+
+
+#endif // AP_BATTERY_UAVCAN_TEMP_ENABLED
