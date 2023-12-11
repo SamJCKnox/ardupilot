@@ -15,6 +15,7 @@ public:
     float get_flow();
     float get_temp();
     bool is_air_in_flow();
+    bool is_high_flow();
 
     static const struct AP_Param::GroupInfo var_info[];
 
@@ -29,6 +30,7 @@ private:
     float flow;
     float temp;
     bool air_in_flow;
+    bool high_flow;
 
     AP_HAL::OwnPtr<AP_HAL::I2CDevice> sensor;
 

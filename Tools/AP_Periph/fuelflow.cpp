@@ -34,6 +34,14 @@ void AP_Periph_FW::can_fuel_flow_update(void)
             UAVCAN_EQUIPMENT_ICE_RECIPROCATING_STATUS_FLAG_DEBRIS_SUPPORTED;
     }
 
+    if(fuel_flow.is_high_flow()){
+        pkt.flags |=
+            UAVCAN_EQUIPMENT_ICE_RECIPROCATING_STATUS_FLAG_OIL_PRESSURE_SUPPORTED |
+            UAVCAN_EQUIPMENT_ICE_RECIPROCATING_STATUS_FLAG_OIL_PRESSURE_ABOVE_NOMINAL;
+    }else{
+        pkt.flags |= UAVCAN_EQUIPMENT_ICE_RECIPROCATING_STATUS_FLAG_OIL_PRESSURE_SUPPORTED;
+    }
+
 
     uint8_t buffer[UAVCAN_EQUIPMENT_ICE_RECIPROCATING_STATUS_MAX_SIZE] {};
     const uint16_t total_size = uavcan_equipment_ice_reciprocating_Status_encode(&pkt, buffer, !canfdout());

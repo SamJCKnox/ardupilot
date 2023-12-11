@@ -111,7 +111,8 @@ bool AP_Senserion_FuelFlow::measure()
     flags_raw = receive[6] << 8 | receive[7];
     
     air_in_flow = (flags_raw & 0x01) == 0x01;
-    
+    high_flow = (flags_raw & 0x02) == 0x02;
+
     return true;
 }
 
@@ -139,6 +140,10 @@ float AP_Senserion_FuelFlow::get_temp()
 bool AP_Senserion_FuelFlow::is_air_in_flow()
 {
     return air_in_flow;
+}
+bool AP_Senserion_FuelFlow::is_high_flow()
+{
+    return high_flow;
 }
 
 void AP_Senserion_FuelFlow::update()
