@@ -275,6 +275,10 @@ const AP_Param::Info AP_Periph_FW::var_info[] = {
     GOBJECT(airspeed, "ARSPD", AP_Airspeed),
 #endif
 
+#ifdef HAL_PERIPH_ENABLE_FUEL_FLOW
+    GOBJECT(fuel_flow, "FLOW", AP_Senserion_FuelFlow),
+#endif
+
 #ifdef HAL_PERIPH_ENABLE_RANGEFINDER
     // @Param: RNGFND_BAUDRATE
     // @DisplayName: Rangefinder serial baudrate

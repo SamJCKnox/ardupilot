@@ -217,6 +217,11 @@ void AP_Periph_FW::init()
 
 #endif
 
+#ifdef HAL_PERIPH_ENABLE_FUEL_FLOW  
+    fuel_flow.init();
+#endif
+
+
 #ifdef HAL_PERIPH_ENABLE_RANGEFINDER
     if (rangefinder.get_type(0) != RangeFinder::Type::NONE) {
         if (g.rangefinder_port >= 0) {
