@@ -11,8 +11,6 @@
 
 #include <stdio.h>
 
-#define invFlowScaleFactor 32
-
 // From SENSIRIONI2CSF06LF_H
 // INV_FLOW_SCALE_FACTORS_SLF3C_1300F = 500,
 // INV_FLOW_SCALE_FACTORS_SLF3S_1300F = 500,
@@ -41,6 +39,12 @@ const AP_Param::GroupInfo AP_Senserion_FuelFlow::var_info[] = {
     AP_GROUPINFO_FLAGS("_ENABLE", 30, AP_Senserion_FuelFlow, enable, 0, AP_PARAM_FLAG_ENABLE),
 
     AP_GROUPINFO("_I2C_BUS", 2, AP_Senserion_FuelFlow, bus, 0),
+
+    AP_GROUPINFO("_FLOW_SCALE_FACTOR", 3, AP_Senserion_FuelFlow, invFlowScaleFactor, 32),
+
+    AP_GROUPINFO("_FLOW_CAL_SLOPE", 4, AP_Senserion_FuelFlow, flow_slope, 1),
+
+    AP_GROUPINFO("_FLOW_CAL_OFFSET", 5, AP_Senserion_FuelFlow, flow_offset, 0),
 
     AP_GROUPEND};
 
@@ -75,8 +79,8 @@ bool AP_Senserion_FuelFlow::probe()
         return false;
     }
 
-    // Send continuous command
-    uint8_t send_buf2[] = {0x36, 0x08};
+    // Send continuous command (IPA)
+    uint8_t send_buf2[] = {0x36, 0x15};
 
     if (!dev->transfer(send_buf2, sizeof(send_buf2), nullptr, 0))
     {
@@ -121,7 +125,7 @@ void AP_Senserion_FuelFlow::convert_and_assign()
 {
     flow = 0.0;
     flow = (float)(flow_raw);
-    flow = flow / (int)(invFlowScaleFactor);
+    flow = flow_slope * (flow / (int)(invFlowScaleFactor)) + flow_offset;
 
     temp = 0.0;
     temp = temp_raw / 200.0;
