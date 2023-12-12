@@ -136,6 +136,10 @@ void AP_Senserion_FuelFlow::convert_and_assign()
 
     temp = 0.0;
     temp = temp_raw / 200.0;
+
+    now = AP_HAL::millis();
+    estimated_consumed_fuel += flow * (now - last_updated_ms)/60000.0f;
+    last_updated_ms = now;
 }
 
 float AP_Senserion_FuelFlow::get_flow()
@@ -146,6 +150,10 @@ float AP_Senserion_FuelFlow::get_flow()
 float AP_Senserion_FuelFlow::get_temp()
 {
     return temp;
+}
+float AP_Senserion_FuelFlow::get_estimated_consumed_fuel()
+{
+    return estimated_consumed_fuel;
 }
 
 bool AP_Senserion_FuelFlow::is_air_in_flow()

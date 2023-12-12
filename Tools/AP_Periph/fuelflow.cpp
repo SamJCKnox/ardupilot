@@ -22,6 +22,7 @@ void AP_Periph_FW::can_fuel_flow_update(void)
 
     pkt.fuel_consumption_rate_cm3pm = fuel_flow.get_flow();
     pkt.oil_temperature = fuel_flow.get_temp();
+    pkt.estimated_fuel_used_cm3 = fuel_flow.get_estimated_consumed_fuel();
 
     if (fuel_flow.is_air_in_flow()) {
         pkt.flags |=

@@ -14,6 +14,7 @@ public:
     bool enabled();
     float get_flow();
     float get_temp();
+    float get_estimated_consumed_fuel();
     bool is_air_in_flow();
     bool is_high_flow();
 
@@ -28,6 +29,7 @@ private:
     void convert_and_assign();
 
     float flow;
+    float estimated_consumed_fuel;
     float temp;
     bool air_in_flow;
     bool high_flow;
@@ -37,6 +39,8 @@ private:
     int64_t flow_raw; 
     uint16_t temp_raw; 
     uint16_t flags_raw;
+    uint32_t last_updated_ms;
+    uint32_t now;
 
     AP_Int8 invFlowScaleFactor; 
     AP_Int8 enable;
