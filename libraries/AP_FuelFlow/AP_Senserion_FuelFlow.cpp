@@ -65,8 +65,13 @@ bool AP_Senserion_FuelFlow::enabled()
     return enable;
 }
 
-bool AP_Senserion_FuelFlow::probe()
+bool AP_Senserion_FuelFlow::init()
 {
+    if (!enable)
+    {
+        return false;
+    }
+
     AP_HAL::OwnPtr<AP_HAL::I2CDevice> dev = hal.i2c_mgr->get_device(bus, sensor_address);
 
     if (!dev)
@@ -174,16 +179,3 @@ void AP_Senserion_FuelFlow::update()
     convert_and_assign();
 }
 
-bool AP_Senserion_FuelFlow::init()
-{
-    if (!enable)
-    {
-        return false;
-    }
-
-    if(!probe()){
-        printf("Initialisation Error\n");
-        return false;
-    }
-    return true;
-}

@@ -22,10 +22,7 @@ public:
 
 private:
 
-    bool probe();
-
     bool measure();
-
     void convert_and_assign();
 
     float flow;
