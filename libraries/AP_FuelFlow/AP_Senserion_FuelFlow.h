@@ -38,7 +38,7 @@ private:
     uint16_t temp_raw; 
     uint16_t flags_raw;
 
-    AP_Int16 invFlowScaleFactor; 
+    AP_Int8 invFlowScaleFactor; 
     AP_Int8 enable;
     AP_Int8 bus;
     AP_float flow_offset;

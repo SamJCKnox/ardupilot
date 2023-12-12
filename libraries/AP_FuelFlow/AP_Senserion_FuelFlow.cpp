@@ -29,6 +29,8 @@ extern const AP_HAL::HAL &hal;
 
 const uint8_t sensor_address = 0x08;
 
+const uint16_t invFlowScaleFactorDict[] = {500, 500, 32, 10, 1200, 20};
+
 
 const AP_Param::GroupInfo AP_Senserion_FuelFlow::var_info[] = {
     // @Param: _ENABLE
@@ -40,11 +42,16 @@ const AP_Param::GroupInfo AP_Senserion_FuelFlow::var_info[] = {
 
     AP_GROUPINFO("_I2C_BUS", 2, AP_Senserion_FuelFlow, bus, 0),
 
-    AP_GROUPINFO("_FLOW_SCALE_FACTOR", 3, AP_Senserion_FuelFlow, invFlowScaleFactor, 32),
+    // @Param: Flow Scale Factor
+    // @DisplayName: Flow Scale Factor
+    // @Description: Select scale factor for sensor being used
+    // @Values: 0:SLF3C_1300F, 1:SLF3S_1300F, 2:SLF3S_4000B, 3:SLF3S_0600F, 4:LD20_0600L, 5:LD20_2600B
+    // @User: Standard
+    AP_GROUPINFO("_SCALE_FACTOR", 3, AP_Senserion_FuelFlow, invFlowScaleFactor, 32),
 
-    AP_GROUPINFO("_FLOW_CAL_SLOPE", 4, AP_Senserion_FuelFlow, flow_slope, 1),
+    AP_GROUPINFO("_CAL_SLOPE", 4, AP_Senserion_FuelFlow, flow_slope, 1),
 
-    AP_GROUPINFO("_FLOW_CAL_OFFSET", 5, AP_Senserion_FuelFlow, flow_offset, 0),
+    AP_GROUPINFO("_CAL_OFFSET", 5, AP_Senserion_FuelFlow, flow_offset, 0),
 
     AP_GROUPEND};
 
@@ -125,7 +132,7 @@ void AP_Senserion_FuelFlow::convert_and_assign()
 {
     flow = 0.0;
     flow = (float)(flow_raw);
-    flow = flow_slope * (flow / (int)(invFlowScaleFactor)) + flow_offset;
+    flow = flow_slope * (flow / (int)(invFlowScaleFactorDict[invFlowScaleFactor])) + flow_offset;
 
     temp = 0.0;
     temp = temp_raw / 200.0;
