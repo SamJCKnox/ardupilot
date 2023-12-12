@@ -45,6 +45,6 @@ private:
     AP_Int8 invFlowScaleFactor; 
     AP_Int8 enable;
     AP_Int8 bus;
-    AP_float flow_offset;
-    AP_float flow_slope;
+    AP_Float flow_offset;
+    AP_Float flow_slope;
 };
