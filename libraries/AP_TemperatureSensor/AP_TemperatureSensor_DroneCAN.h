@@ -4,6 +4,8 @@
 
 #if AP_TEMPERATURE_SENSOR_DRONECAN_ENABLED
 
+#define HAL_ENABLE_DRONECAN_DRIVERS
+
 #include "AP_TemperatureSensor_Backend.h"
 
 #include <AP_DroneCAN/AP_DroneCAN.h>
