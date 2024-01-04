@@ -197,10 +197,6 @@ public:
     uint32_t rpm_last_update_ms;
 #endif
 
-#ifdef HAL_PERIPH_ENABLE_ROTATION_SENSOR
-    AP_RotationSensor rot_sensor;
-#endif
-
 #ifdef HAL_PERIPH_ENABLE_BATTERY
     void handle_battery_failsafe(const char* type_str, const int8_t action) { }
     AP_BattMonitor battery_lib{0, FUNCTOR_BIND_MEMBER(&AP_Periph_FW::handle_battery_failsafe, void, const char*, const int8_t), nullptr};
@@ -248,6 +244,10 @@ public:
 
 #ifdef HAL_PERIPH_ENABLE_AIRSPEED
     AP_Airspeed airspeed;
+#endif
+
+#ifdef HAL_PERIPH_ENABLE_ROTATION_SENSOR
+    AP_RotationSensor rot_sensor;
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_RANGEFINDER

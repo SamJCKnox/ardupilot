@@ -43,7 +43,7 @@ const AP_Param::GroupInfo AP_RotationSensor::var_info[] = {
     AP_GROUPINFO("_AOS_DIR", 8, AP_RotationSensor, aos_dir, 0),
     
     AP_GROUPINFO("_BATT_ID", 9, AP_RotationSensor, send_battery, 0),
-    AP_GROUPINFO("_UPDATE_PERIOD_MS", 10, AP_RotationSensor, update_rate, 50),
+    AP_GROUPINFO("_UPDATE_MS", 10, AP_RotationSensor, update_rate, 50),
 
     AP_GROUPEND};
 

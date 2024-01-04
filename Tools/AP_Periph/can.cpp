@@ -1748,37 +1748,37 @@ void AP_Periph_FW::can_fads_update(void)
                         CANARD_TRANSFER_PRIORITY_LOW,
                         &buffer[0],
                         total_size);
+    }else{
+
+        uavcan_equipment_air_data_AngleOfAttack aoa_pkt = {0};
+
+        aoa_pkt.sensor_id = UAVCAN_EQUIPMENT_AIR_DATA_ANGLEOFATTACK_SENSOR_ID_LEFT;
+        aoa_pkt.aoa = rot_sensor.aoa_rads();
+
+        uint8_t aoa_buffer[UAVCAN_EQUIPMENT_AIR_DATA_ANGLEOFATTACK_MAX_SIZE]{};
+
+        uint16_t total_size = uavcan_equipment_air_data_AngleOfAttack_encode(&aoa_pkt, aoa_buffer, !periph.canfdout());
+
+        canard_broadcast(UAVCAN_EQUIPMENT_AIR_DATA_ANGLEOFATTACK_SIGNATURE,
+                        UAVCAN_EQUIPMENT_AIR_DATA_ANGLEOFATTACK_ID,
+                        CANARD_TRANSFER_PRIORITY_LOW,
+                        aoa_buffer,
+                        total_size);
+
+        uavcan_equipment_air_data_Sideslip aos_pkt = {0};
+
+        aos_pkt.sideslip_angle = rot_sensor.aos_rads();
+
+        uint8_t aos_buffer[UAVCAN_EQUIPMENT_AIR_DATA_SIDESLIP_MAX_SIZE]{};
+
+        total_size = uavcan_equipment_air_data_Sideslip_encode(&aos_pkt, aos_buffer, !periph.canfdout());
+
+        canard_broadcast(UAVCAN_EQUIPMENT_AIR_DATA_SIDESLIP_SIGNATURE,
+                        UAVCAN_EQUIPMENT_AIR_DATA_SIDESLIP_ID,
+                        CANARD_TRANSFER_PRIORITY_LOW,
+                        aos_buffer,
+                        total_size);
     }
-
-    uavcan_equipment_air_data_AngleOfAttack aoa_pkt = {0};
-
-    aoa_pkt.sensor_id = UAVCAN_EQUIPMENT_AIR_DATA_ANGLEOFATTACK_SENSOR_ID_LEFT;
-    aoa_pkt.aoa = rot_sensor.aoa_rads();
-
-    uint8_t aoa_buffer[UAVCAN_EQUIPMENT_AIR_DATA_ANGLEOFATTACK_MAX_SIZE]{};
-
-    uint16_t total_size = uavcan_equipment_air_data_AngleOfAttack_encode(&aoa_pkt, aoa_buffer, !periph.canfdout());
-
-    canard_broadcast(UAVCAN_EQUIPMENT_AIR_DATA_ANGLEOFATTACK_SIGNATURE,
-                     UAVCAN_EQUIPMENT_AIR_DATA_ANGLEOFATTACK_ID,
-                     CANARD_TRANSFER_PRIORITY_LOW,
-                     aoa_buffer,
-                     total_size);
-
-    uavcan_equipment_air_data_Sideslip aos_pkt = {0};
-
-    aos_pkt.sideslip_angle = rot_sensor.aos_rads();
-
-    uint8_t aos_buffer[UAVCAN_EQUIPMENT_AIR_DATA_SIDESLIP_MAX_SIZE]{};
-
-    total_size = uavcan_equipment_air_data_Sideslip_encode(&aos_pkt, aos_buffer, !periph.canfdout());
-
-    canard_broadcast(UAVCAN_EQUIPMENT_AIR_DATA_SIDESLIP_SIGNATURE,
-                     UAVCAN_EQUIPMENT_AIR_DATA_SIDESLIP_ID,
-                     CANARD_TRANSFER_PRIORITY_LOW,
-                     aos_buffer,
-                     total_size);
-
 }
 //#endif // HAL_PERIPH_ENABLE_ROTATION_SENSOR
 
