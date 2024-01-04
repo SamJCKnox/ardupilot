@@ -36,6 +36,7 @@
 #include <AP_RCProtocol/AP_RCProtocol_config.h>
 #include "rc_in.h"
 #include "batt_balance.h"
+#include <AP_RotationSensor/AP_RotationSensor.h>
 
 #include <AP_NMEA_Output/AP_NMEA_Output.h>
 #if HAL_NMEA_OUTPUT_ENABLED && !(HAL_GCS_ENABLED && defined(HAL_PERIPH_ENABLE_GPS))
@@ -128,6 +129,7 @@ public:
     Parameters g;
 
     void can_start();
+    void can_fads_update(void);
     void can_update();
     void can_mag_update();
     void can_gps_update();
@@ -193,6 +195,10 @@ public:
 #ifdef HAL_PERIPH_ENABLE_RPM
     AP_RPM rpm_sensor;
     uint32_t rpm_last_update_ms;
+#endif
+
+#ifdef HAL_PERIPH_ENABLE_ROTATION_SENSOR
+    AP_RotationSensor rot_sensor;
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_BATTERY
@@ -390,6 +396,9 @@ public:
 #endif
 #ifdef HAL_PERIPH_ENABLE_GPS
     bool saw_gps_lock_once;
+#endif
+#ifdef HAL_PERIPH_ENABLE_ROTATION_SENSOR
+    uint32_t last_fads_update_ms;
 #endif
 
     static AP_Periph_FW *_singleton;
