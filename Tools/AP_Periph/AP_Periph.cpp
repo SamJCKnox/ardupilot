@@ -126,6 +126,11 @@ void AP_Periph_FW::init()
     AFIO->MAPR = mapr | AFIO_MAPR_CAN_REMAP_REMAP2 | AFIO_MAPR_SPI3_REMAP;
 #endif
 
+#ifdef HAL_BOARD_AP_PERIPH_SKYNODE
+    uint32_t mapr = AFIO->MAPR;
+    AFIO->MAPR = mapr | AFIO_MAPR_CAN_REMAP_REMAP2;
+#endif
+
 #if HAL_LOGGING_ENABLED
     logger.Init(log_structure, ARRAY_SIZE(log_structure));
 #endif

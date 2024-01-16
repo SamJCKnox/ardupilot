@@ -82,6 +82,11 @@ int main(void)
     AFIO->MAPR = mapr | AFIO_MAPR_CAN_REMAP_REMAP2 | AFIO_MAPR_SPI3_REMAP;
 #endif
 
+#ifdef HAL_BOARD_AP_PERIPH_SKYNODE
+    uint32_t mapr = AFIO->MAPR;
+    AFIO->MAPR = mapr | AFIO_MAPR_CAN_REMAP_REMAP2;
+#endif
+
 #if HAL_FLASH_PROTECTION
     stm32_flash_unprotect_flash();
 #endif
