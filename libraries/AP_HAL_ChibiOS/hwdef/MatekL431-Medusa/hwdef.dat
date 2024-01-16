@@ -1,5 +1,7 @@
 include ../MatekL431/hwdef.inc
 
+define CAN_APP_NODE_NAME "org.ardupilot.MatekL431-Medusa"
+
 define HAL_PERIPH_ENABLE_BATTERY
 define AP_BATT_MONITOR_MAX_INSTANCES 3
 
@@ -25,3 +27,6 @@ define HAL_BATT_CURR_PIN 16
 
 PB0 BATT3_VOLTAGE_SENS ADC1 SCALE(1)    #VB2 Pin
 PB1 BATT3_CURRENT_SENS ADC1 SCALE(1)    #Curr2 Pin
+
+# Set up fuel flow 
+define HAL_PERIPH_ENABLE_FUEL_FLOW TRUE
