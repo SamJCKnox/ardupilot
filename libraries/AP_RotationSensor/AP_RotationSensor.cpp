@@ -83,7 +83,7 @@ bool AP_RotationSensor::probe(uint8_t address)
     }
 
     // configure PWM output
-    uint8_t send_buf[] = {0x08, 0b00110000};
+    uint8_t send_buf[] = {0x08, 0b00100000};
 
     if (!dev->transfer(send_buf, sizeof(send_buf), nullptr, 0))
     {
@@ -254,16 +254,16 @@ bool AP_RotationSensor::convert_and_assign()
         aoa = aoa_dir ? secondary_f : (M_PI * 2) - secondary_f;
         aos = aos_dir ? primary_f : (M_PI * 2) - primary_f;
 
-        aoa = wrap_2PI(aoa + aoa_trim) - M_PI;
-        aos = wrap_2PI(aos + aos_trim) - M_PI;
+        aoa = wrap_2PI(aoa + aoa_trim);
+        aos = wrap_2PI(aos + aos_trim);
     }
     else
     {
         aoa = aoa_dir ? primary_f : (M_PI * 2) - primary_f;
         aos = aos_dir ? secondary_f : (M_PI * 2) - secondary_f;
 
-        aoa = wrap_2PI(primary_f + aoa_trim) - M_PI;
-        aos = wrap_2PI(secondary_f + aos_trim) - M_PI;
+        aoa = wrap_2PI(primary_f + aoa_trim);
+        aos = wrap_2PI(secondary_f + aos_trim);
     }
 
     return true;
