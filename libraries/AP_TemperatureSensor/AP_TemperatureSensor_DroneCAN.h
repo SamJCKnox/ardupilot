@@ -1,22 +1,20 @@
 #pragma once
 
-#include "AP_TemperatureSensor_config.h"
+#include "AP_TemperatureSensor.h"
+#include "AP_TemperatureSensor_Backend.h"
 
 #if AP_TEMPERATURE_SENSOR_DRONECAN_ENABLED
-
-#define HAL_ENABLE_DRONECAN_DRIVERS
-
-#include "AP_TemperatureSensor_Backend.h"
 
 #include <AP_DroneCAN/AP_DroneCAN.h>
 
 
-class AP_TemperatureSensor_DroneCAN : public AP_TemperatureSensor_Backend
-{   
-public:
-
-    using AP_TemperatureSensor_Backend::AP_TemperatureSensor_Backend;
+class AP_TemperatureSensor_DroneCAN : public AP_TemperatureSensor_Backend {
+        using AP_TemperatureSensor_Backend::AP_TemperatureSensor_Backend;
     
+public:
+    /// Constructor
+    AP_TemperatureSensor_DroneCAN(AP_TemperatureSensor &temp, AP_TemperatureSensor::TemperatureSensor_State &temp_state, AP_TemperatureSensor_Params &params);
+
     static const struct AP_Param::GroupInfo var_info[];
 
     void init(void) override;
@@ -29,19 +27,11 @@ public:
 private:
     float _temperature; // Celsius
 
-    static void handle_temperature(AP_DroneCAN *ap_dronecan, const CanardRxTransfer& transfer, const uavcan_equipment_device_Temperature &msg);
+    AP_DroneCAN* ap_dronecan;
+    AP_Int8 node_id;
 
-    static AP_TemperatureSensor_DroneCAN* get_dronecan_backend(AP_DroneCAN* ap_dronecan, uint8_t node_id);
-
-    // Module Detection Registry
-    static struct DetectedModules {
-        AP_DroneCAN* ap_dronecan;
-        uint8_t node_id;
-        AP_TemperatureSensor_DroneCAN *driver;
-    } _detected_modules[AP_TEMPERATURE_SENSOR_MAX_INSTANCES];
-    
-    static HAL_Semaphore _sem_registry;
-    
     HAL_Semaphore _sem_temperature;
+
+    void handle_temperature(const CanardRxTransfer&);
 };
-#endif // HAL_ENABLE_DRONECAN_DRIVER
+#endif // AP_TEMPERATURE_SENSOR_DRONECAN_ENABLED

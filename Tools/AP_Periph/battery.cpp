@@ -34,6 +34,25 @@ void AP_Periph_FW::can_battery_update(void)
         if (!battery_lib.healthy(i)) {
             continue;
         }
+        if(battery_lib.is_circuit_status_enabled(i)){
+            // Send DroneCAN message as uavcan.equipment.power.CircuitStatus message
+            uavcan_equipment_power_CircuitStatus pkt {};
+            pkt.circuit_id =  battery_lib.get_serial_number(i);
+            pkt.voltage = battery_lib.voltage(i);
+            float current;
+            if (battery_lib.current_amps(current, i)) {
+                pkt.current = current;
+            }
+
+            uint8_t buffer[UAVCAN_EQUIPMENT_POWER_CIRCUITSTATUS_MAX_SIZE] {};
+            const uint16_t total_size = uavcan_equipment_power_CircuitStatus_encode(&pkt, buffer, !periph.canfdout());
+            canard_broadcast(UAVCAN_EQUIPMENT_POWER_CIRCUITSTATUS_SIGNATURE,
+                            UAVCAN_EQUIPMENT_POWER_CIRCUITSTATUS_ID,
+                            CANARD_TRANSFER_PRIORITY_LOW,
+                            &buffer[0],
+                            total_size);
+
+        } else {
 
         uavcan_equipment_power_BatteryInfo pkt {};
 
@@ -80,6 +99,7 @@ void AP_Periph_FW::can_battery_update(void)
         if (battery_lib.has_cell_voltages(i)) {
             can_battery_send_cells(i);
         }
+    }
     }
 }
 

@@ -1,29 +1,44 @@
-#include "AP_TemperatureSensor_DroneCAN.h"
+#include "AP_TemperatureSensor_config.h"
 
 #if AP_TEMPERATURE_SENSOR_DRONECAN_ENABLED
-
+#include "AP_TemperatureSensor.h"
+#include "AP_TemperatureSensor_DroneCAN.h"
+#include <AP_Common/AP_Common.h>
 #include <AP_CANManager/AP_CANManager.h>
 #include <AP_Math/AP_Math.h>
 #include <AP_DroneCAN/AP_DroneCAN.h>
 #include <AP_BoardConfig/AP_BoardConfig.h>
 
-extern const AP_HAL::HAL& hal;
-
 #define LOG_TAG "Temp"
 
-AP_TemperatureSensor_DroneCAN::DetectedModules AP_TemperatureSensor_DroneCAN::_detected_modules[];
+extern const AP_HAL::HAL& hal;
 
-HAL_Semaphore AP_TemperatureSensor_DroneCAN::_sem_registry;
+const AP_Param::GroupInfo AP_TemperatureSensor_DroneCAN::var_info[] = {
+
+    // @Param: ID
+    // @DisplayName: ID of temperature sensor
+    // @Description: ID used to match temperature sensor to a specific node
+    // @Range: 1 127
+    // @User: Advanced
+    AP_GROUPINFO("ID", 30, AP_TemperatureSensor_DroneCAN, node_id, 1),
+
+    // Param indexes must be between 30 and 39 to avoid conflict with other battery monitor param tables loaded by pointer
+
+    AP_GROUPEND
+};
+
+//constructor
+AP_TemperatureSensor_DroneCAN::AP_TemperatureSensor_DroneCAN(AP_TemperatureSensor &temp, AP_TemperatureSensor::TemperatureSensor_State &temp_state, AP_TemperatureSensor_Params &params) :
+    AP_TemperatureSensor_Backend(temp, temp_state, params)
+{
+    AP_Param::setup_object_defaults(this,var_info);
+    _state.var_info = var_info;
+
+}
 
 void AP_TemperatureSensor_DroneCAN::subscribe_msgs(AP_DroneCAN* ap_dronecan)
 {
-    if (ap_dronecan == nullptr) {
-        return;
-    }
 
-    if (Canard::allocate_sub_arg_callback(ap_dronecan, &handle_temperature, ap_dronecan->get_driver_index()) == nullptr) {
-        AP_BoardConfig::allocation_error("temperature_sensor_sub");
-    }
 }
 
 void AP_TemperatureSensor_DroneCAN::init()
@@ -33,52 +48,9 @@ void AP_TemperatureSensor_DroneCAN::init()
 
 }
 
-AP_TemperatureSensor_DroneCAN* AP_TemperatureSensor_DroneCAN::get_dronecan_backend(AP_DroneCAN* ap_dronecan, uint8_t node_id)
+void AP_TemperatureSensor_DroneCAN::handle_temperature(const CanardRxTransfer& transfer)
 {
-    if (ap_dronecan == nullptr) {
-        return nullptr;
-    }
 
-    for (uint8_t i = 0; i < AP_TEMPERATURE_SENSOR_MAX_INSTANCES; i++) {
-        if (_detected_modules[i].driver != nullptr &&
-            _detected_modules[i].ap_dronecan == ap_dronecan &&
-            _detected_modules[i].node_id == node_id ) {
-            return _detected_modules[i].driver;
-        }
-    }
-
-    bool detected = false;
-    for (uint8_t i = 0; i < AP_TEMPERATURE_SENSOR_MAX_INSTANCES; i++) {
-        if (_detected_modules[i].ap_dronecan == ap_dronecan && _detected_modules[i].node_id == node_id) {
-            // detected
-            detected = true;
-            break;
-        }
-    }
-
-    if (!detected) {
-        for (uint8_t i = 0; i < AP_TEMPERATURE_SENSOR_MAX_INSTANCES; i++) {
-            if (_detected_modules[i].ap_dronecan == nullptr) {
-                _detected_modules[i].ap_dronecan = ap_dronecan;
-                _detected_modules[i].node_id = node_id;
-                break;
-            }
-        }
-    }
-
-    return nullptr;
-}
-
-void AP_TemperatureSensor_DroneCAN::handle_temperature(AP_DroneCAN *ap_dronecan, const CanardRxTransfer& transfer, const uavcan_equipment_device_Temperature &msg)
-{
-    WITH_SEMAPHORE(_sem_registry);
-
-    AP_TemperatureSensor_DroneCAN* driver = get_dronecan_backend(ap_dronecan, transfer.source_node_id);
-
-    if (driver != nullptr) {
-        WITH_SEMAPHORE(driver->_sem_temperature);
-        driver->_temperature = KELVIN_TO_C(msg.temperature);
-    }
 }
 
 

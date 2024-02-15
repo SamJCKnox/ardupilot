@@ -222,6 +222,9 @@ public:
     int32_t get_serial_number(uint8_t instance) const {
         return _params[instance]._serial_number;
     }
+    bool is_circuit_status_enabled(uint8_t instance) const {
+        return _params[instance]._options.get() & (uint32_t)AP_BattMonitor_Params::Options::SendCircuitStatus;
+    }
 
     /// true when (voltage * current) > watt_max
     bool overpower_detected() const;
