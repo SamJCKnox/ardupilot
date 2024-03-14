@@ -35,6 +35,23 @@ void AP_Periph_FW::can_battery_update(void)
             continue;
         }
 
+        if (battery_lib.get_type(i) == AP_BattMonitor::Type::FuelLevel_Analog) {
+
+            uavcan_equipment_ice_FuelTankStatus pkt {};
+
+            pkt.available_fuel_volume_cm3 = battery_lib.voltage(i);
+            pkt.fuel_tank_id = battery_lib.get_serial_number(i);
+
+            uint8_t buffer[UAVCAN_EQUIPMENT_ICE_FUELTANKSTATUS_MAX_SIZE] {};
+            const uint16_t total_size = uavcan_equipment_ice_FuelTankStatus_encode(&pkt, buffer, !periph.canfdout());
+            canard_broadcast(UAVCAN_EQUIPMENT_ICE_FUELTANKSTATUS_SIGNATURE,
+                        UAVCAN_EQUIPMENT_ICE_FUELTANKSTATUS_ID,
+                        CANARD_TRANSFER_PRIORITY_LOW,
+                        &buffer[0],
+                        total_size);
+            continue;
+        }
+
         uavcan_equipment_power_BatteryInfo pkt {};
 
         // if a battery serial number is assigned, use that as the ID. Else, use the index.

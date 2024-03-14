@@ -37,6 +37,7 @@
 #include "rc_in.h"
 #include "batt_balance.h"
 #include <AP_RotationSensor/AP_RotationSensor.h>
+#include <AP_FuelFlow/AP_Senserion_FuelFlow.h>
 
 #include <AP_NMEA_Output/AP_NMEA_Output.h>
 #if HAL_NMEA_OUTPUT_ENABLED && !(HAL_GCS_ENABLED && defined(HAL_PERIPH_ENABLE_GPS))
@@ -144,6 +145,7 @@ public:
     void can_buzzer_update(void);
     void can_safety_button_update(void);
     void can_safety_LED_update(void);
+    void can_fuel_flow_update(void); 
 
     void load_parameters();
     void prepare_reboot();
@@ -253,6 +255,10 @@ public:
 #ifdef HAL_PERIPH_ENABLE_RANGEFINDER
     RangeFinder rangefinder;
     uint32_t last_sample_ms;
+#endif
+
+#ifdef HAL_PERIPH_ENABLE_FUEL_FLOW
+    AP_Senserion_FuelFlow fuel_flow;
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_PROXIMITY
@@ -399,6 +405,9 @@ public:
 #endif
 #ifdef HAL_PERIPH_ENABLE_ROTATION_SENSOR
     uint32_t last_fads_update_ms;
+#endif
+#ifdef HAL_PERIPH_ENABLE_FUEL_FLOW
+    uint32_t last_fuel_flow_update_ms;
 #endif
 
     static AP_Periph_FW *_singleton;

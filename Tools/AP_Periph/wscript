@@ -82,6 +82,7 @@ def build(bld):
                      'AP_FETtecOneWire',
                      'GCS_MAVLink',
                      'AP_RotationSensor'
+                     'AP_FuelFlow'
                      ]
 
     bld.ap_stlib(

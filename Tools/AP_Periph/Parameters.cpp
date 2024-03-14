@@ -275,11 +275,15 @@ const AP_Param::Info AP_Periph_FW::var_info[] = {
     GOBJECT(airspeed, "ARSPD", AP_Airspeed),
 #endif
 
+
 #ifdef HAL_PERIPH_ENABLE_ROTATION_SENSOR
     // Airspeed driver
     // @Group: ARSPD
     // @Path: ../libraries/AP_Airspeed/AP_Airspeed.cpp
     GOBJECT(rot_sensor, "FAD", AP_RotationSensor),
+#endif
+#ifdef HAL_PERIPH_ENABLE_FUEL_FLOW
+    GOBJECT(fuel_flow, "FLOW", AP_Senserion_FuelFlow),
 #endif
 
 #ifdef HAL_PERIPH_ENABLE_RANGEFINDER
