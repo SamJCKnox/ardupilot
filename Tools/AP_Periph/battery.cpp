@@ -34,14 +34,14 @@ void AP_Periph_FW::can_battery_update(void)
         if (!battery_lib.healthy(i)) {
             continue;
         }
-
+#ifdef AP_BATTERY_FUELLEVEL_ANALOG_ENABLED
         if (battery_lib.get_type(i) == AP_BattMonitor::Type::FuelLevel_Analog) {
 
             uavcan_equipment_ice_FuelTankStatus pkt {};
 
             pkt.available_fuel_volume_cm3 = battery_lib.voltage(i);
             pkt.fuel_tank_id = battery_lib.get_serial_number(i);
-
+          
             uint8_t buffer[UAVCAN_EQUIPMENT_ICE_FUELTANKSTATUS_MAX_SIZE] {};
             const uint16_t total_size = uavcan_equipment_ice_FuelTankStatus_encode(&pkt, buffer, !periph.canfdout());
             canard_broadcast(UAVCAN_EQUIPMENT_ICE_FUELTANKSTATUS_SIGNATURE,
@@ -51,6 +51,7 @@ void AP_Periph_FW::can_battery_update(void)
                         total_size);
             continue;
         }
+#endif // AP_BATTERY_FUELLEVEL_ANALOG_ENABLED
 
         uavcan_equipment_power_BatteryInfo pkt {};
 
