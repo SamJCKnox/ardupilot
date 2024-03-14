@@ -163,6 +163,11 @@ void AP_Periph_FW::init()
     battery_lib.init();
 #endif
 
+#ifdef HAL_PERIPH_ENABLE_ROTATION_SENSOR
+    rot_sensor.init();
+#endif
+
+
 #ifdef HAL_PERIPH_ENABLE_RCIN
     rcin_init();
 #endif
