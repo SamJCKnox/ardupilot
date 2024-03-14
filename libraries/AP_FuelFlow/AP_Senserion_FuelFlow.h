@@ -15,10 +15,22 @@ public:
     float get_flow();
     float get_temp();
     float get_estimated_consumed_fuel();
+    int8_t get_id();
     bool is_air_in_flow();
     bool is_high_flow();
 
     static const struct AP_Param::GroupInfo var_info[];
+
+
+    enum class Options : uint8_t {
+        FuelTankStatus                   = (1U<<0),  
+        ReciprocatingStatus              = (1U<<1),
+    };
+
+        // check if a option is set
+    bool option_is_set(const AP_Senserion_FuelFlow::Options option) const {
+        return (uint16_t(options) & uint16_t(option)) != 0;
+    }
 
 private:
 
@@ -30,6 +42,7 @@ private:
     float temp;
     bool air_in_flow;
     bool high_flow;
+    Options options;
 
     AP_HAL::OwnPtr<AP_HAL::I2CDevice> sensor;
 
@@ -44,4 +57,6 @@ private:
     AP_Int8 bus;
     AP_Float flow_offset;
     AP_Float flow_slope;
+    AP_Int8 id;
+    AP_Int8 msg_type;
 };

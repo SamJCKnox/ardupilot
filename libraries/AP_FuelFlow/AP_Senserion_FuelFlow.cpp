@@ -53,6 +53,10 @@ const AP_Param::GroupInfo AP_Senserion_FuelFlow::var_info[] = {
 
     AP_GROUPINFO("_CAL_OFFSET", 5, AP_Senserion_FuelFlow, flow_offset, 0.0f),
 
+    AP_GROUPINFO("_TANK_ID", 6, AP_Senserion_FuelFlow, id, 1),
+
+    AP_GROUPINFO("_MSG_TYPE", 7, AP_Senserion_FuelFlow, msg_type, 0), // 0: FuelTankStatus, 1: ReciprocatingStatus
+
     AP_GROUPEND};
 
 AP_Senserion_FuelFlow::AP_Senserion_FuelFlow()
@@ -155,6 +159,10 @@ float AP_Senserion_FuelFlow::get_flow()
 float AP_Senserion_FuelFlow::get_temp()
 {
     return temp;
+}
+int8_t AP_Senserion_FuelFlow::get_id()
+{
+    return id;
 }
 float AP_Senserion_FuelFlow::get_estimated_consumed_fuel()
 {
