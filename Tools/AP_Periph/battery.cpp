@@ -40,8 +40,7 @@ void AP_Periph_FW::can_battery_update(void)
             uavcan_equipment_ice_FuelTankStatus pkt {};
 
             pkt.available_fuel_volume_cm3 = battery_lib.voltage(i);
-            pkt.fuel_tank_id = i;
-            pkt.fuel_temperature = fuel_flow.get_temp();
+            pkt.fuel_tank_id = battery_lib.get_serial_number(i);
 
             uint8_t buffer[UAVCAN_EQUIPMENT_ICE_FUELTANKSTATUS_MAX_SIZE] {};
             const uint16_t total_size = uavcan_equipment_ice_FuelTankStatus_encode(&pkt, buffer, !periph.canfdout());
