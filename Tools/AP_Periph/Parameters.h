@@ -23,6 +23,7 @@ public:
         k_param_buzz_volume,
         k_param_led_brightness,
         k_param_airspeed,
+        k_param_rot_sensor,
         k_param_fuel_flow,
         k_param_rangefinder,
         k_param_flash_bootloader,
