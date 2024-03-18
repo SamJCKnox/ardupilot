@@ -1718,7 +1718,7 @@ void AP_Periph_FW::apd_esc_telem_update()
 #endif // HAL_PERIPH_ENABLE_RC_OUT
 
 
-//#ifdef HAL_PERIPH_ENABLE_ROTATION_SENSOR
+#ifdef HAL_PERIPH_ENABLE_ROTATION_SENSOR
 void AP_Periph_FW::can_fads_update(void)
 {
     if (!rot_sensor.enabled())
@@ -1783,7 +1783,7 @@ void AP_Periph_FW::can_fads_update(void)
                         total_size);
     }
 }
-//#endif // HAL_PERIPH_ENABLE_ROTATION_SENSOR
+#endif // HAL_PERIPH_ENABLE_ROTATION_SENSOR
 
 void AP_Periph_FW::can_update()
 {

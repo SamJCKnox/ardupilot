@@ -29,7 +29,7 @@ public:
 
         // check if a option is set
     bool option_is_set(const AP_Senserion_FuelFlow::Options option) const {
-        return (uint16_t(options) & uint16_t(option)) != 0;
+        return (uint8_t(msg_type) & uint8_t(option)) != 0;
     }
 
 private:

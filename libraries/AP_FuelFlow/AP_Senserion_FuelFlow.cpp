@@ -19,12 +19,6 @@
 // INV_FLOW_SCALE_FACTORS_LD20_0600L = 1200,
 // INV_FLOW_SCALE_FACTORS_LD20_2600B = 20,
 
-// Hacky but we need to be able to do this without including AP_Periph.h
-extern "C"
-{
-    void can_printf(const char *fmt, ...) FMT_PRINTF(1, 2);
-}
-
 extern const AP_HAL::HAL &hal;
 
 const uint8_t sensor_address = 0x08;
@@ -55,7 +49,7 @@ const AP_Param::GroupInfo AP_Senserion_FuelFlow::var_info[] = {
 
     AP_GROUPINFO("_TANK_ID", 6, AP_Senserion_FuelFlow, id, 1),
 
-    AP_GROUPINFO("_MSG_TYPE", 7, AP_Senserion_FuelFlow, msg_type, 0), // 0: FuelTankStatus, 1: ReciprocatingStatus
+    AP_GROUPINFO("_MSG_TYPE", 7, AP_Senserion_FuelFlow, msg_type, 0), // Bitmask 0: FuelTankStatus, 1: ReciprocatingStatus
 
     AP_GROUPEND};
 

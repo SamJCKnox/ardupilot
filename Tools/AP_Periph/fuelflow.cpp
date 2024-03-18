@@ -11,13 +11,13 @@ void AP_Periph_FW::can_fuel_flow_update(void)
     }
 
     uint32_t now = AP_HAL::millis();
-    if (now - last_fuel_flow_update_ms < 50) {
-        // max 20Hz data
+    if (now - last_fuel_flow_update_ms < 1000) {
+        // max 1Hz data
         return;
     }
     last_fuel_flow_update_ms = now;
     fuel_flow.update();
-
+    
     if (fuel_flow.option_is_set(AP_Senserion_FuelFlow::Options::FuelTankStatus)) {
 
         uavcan_equipment_ice_FuelTankStatus pkt {};
