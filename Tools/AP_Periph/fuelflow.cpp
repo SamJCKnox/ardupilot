@@ -11,8 +11,7 @@ void AP_Periph_FW::can_fuel_flow_update(void)
     }
 
     uint32_t now = AP_HAL::millis();
-    if (now - last_fuel_flow_update_ms < 1000) {
-        // max 1Hz data
+    if (now - last_fuel_flow_update_ms < fuel_flow.get_rate() ){
         return;
     }
     last_fuel_flow_update_ms = now;

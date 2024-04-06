@@ -51,6 +51,8 @@ const AP_Param::GroupInfo AP_Senserion_FuelFlow::var_info[] = {
 
     AP_GROUPINFO("_MSG_TYPE", 7, AP_Senserion_FuelFlow, msg_type, 0), // Bitmask 0: FuelTankStatus, 1: ReciprocatingStatus
 
+    AP_GROUPINFO("_RATE_MS", 8, AP_Senserion_FuelFlow, rate, 100), // Message every x ms
+
     AP_GROUPEND};
 
 AP_Senserion_FuelFlow::AP_Senserion_FuelFlow()
@@ -61,6 +63,11 @@ AP_Senserion_FuelFlow::AP_Senserion_FuelFlow()
 bool AP_Senserion_FuelFlow::enabled()
 {
     return enable;
+}
+
+int16_t AP_Senserion_FuelFlow::get_rate()
+{
+    return rate;
 }
 
 bool AP_Senserion_FuelFlow::init()

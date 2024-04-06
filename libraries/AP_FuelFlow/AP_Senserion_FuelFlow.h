@@ -12,6 +12,7 @@ public:
     bool init();
     void update();
     bool enabled();
+    int16_t get_rate();
     float get_flow();
     float get_temp();
     float get_estimated_consumed_fuel();
@@ -59,4 +60,5 @@ private:
     AP_Float flow_slope;
     AP_Int8 id;
     AP_Int8 msg_type;
+    AP_Int16 rate;
 };
