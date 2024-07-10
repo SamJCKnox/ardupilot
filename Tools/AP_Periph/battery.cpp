@@ -20,7 +20,7 @@ extern const AP_HAL::HAL &hal;
 void AP_Periph_FW::can_battery_update(void)
 {
     const uint32_t now_ms = AP_HAL::millis();
-    if (now_ms - battery.last_can_send_ms < 100)
+    if (now_ms - battery.last_can_send_ms < 1000)
     {
         return;
     }

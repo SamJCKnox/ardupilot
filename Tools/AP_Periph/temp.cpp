@@ -11,8 +11,8 @@
 void AP_Periph_FW::can_temp_update(void)
 {
     uint32_t now = AP_HAL::millis();
-    if (now - last_temp_update_ms < 50) {
-        // max 20Hz data
+    if (now - last_temp_update_ms < 5000) {
+        // max 0.2Hz data
         return;
     }
     last_temp_update_ms = now;
