@@ -1,0 +1,42 @@
+include ../MatekL431/hwdef.inc
+
+# --------------------- PWM -----------------------
+define HAL_PERIPH_ENABLE_RC_OUT
+PA8   TIM1_CH1  TIM1 PWM(1) GPIO(50)
+PA9   TIM1_CH2  TIM1 PWM(2) GPIO(51)
+
+# --------------------- Battery Monitors -----------------------
+define HAL_PERIPH_ENABLE_BATTERY
+define AP_BATT_MONITOR_MAX_INSTANCES 7
+define HAL_PERIPH_BATTERY_SKIP_NAME
+
+define HAL_USE_ADC TRUE
+define STM32_ADC_USE_ADC1 TRUE
+
+# -----Commented out for next rev ---------
+
+#define HAL_BATT_MONITOR_DEFAULT 4       # Analogue voltage and current
+
+#define HAL_BATT_VOLT_PIN 5
+#define HAL_BATT_CURR_PIN 6
+
+#PA0 BATT_VOLTAGE_SENS  ADC1 SCALE(1)    #VBat Pin (Pin 5) - Measuring Battery 1
+#PA1 HAL_BATT2_VOLT_PIN ADC1 SCALE(1)   #Curr Pin (Pin 6) - Measuring 28V bus
+
+#define HAL_BATT3_VOLT_PIN 15
+#define HAL_BATT3_CURR_PIN 16
+
+#PB0 BATT3_VOLTAGE_SENS ADC1 SCALE(1)    #VB2 Pin (Pin 15) - Measuring Battery 2
+#PB1 BATT4_VOLTAGE_SENS ADC1 SCALE(1)    #Curr2 Pin (Pin 16) - Measuring 5V bus
+
+# -----Commented out for next rev ---------
+
+
+
+define AP_BATTERY_INA2XX_ENABLED 1
+
+# -------------------- TEMP--------------------
+define HAL_PERIPH_ENABLE_TEMP
+define AP_TEMPERATURE_SENSOR_ENABLED 1
+define AP_TEMPERATURE_SENSOR_ANALOG_ENABLED 1
+define AP_TEMPERATURE_SENSOR_MAX_INSTANCES 5

@@ -364,6 +364,9 @@ void AP_Periph_FW::handle_param_executeopcode(CanardInstance* canard_instance, C
 #ifdef HAL_PERIPH_ENABLE_AIRSPEED
         AP_Param::setup_object_defaults(&airspeed, airspeed.var_info);
 #endif
+#ifdef HAL_PERIPH_ENABLE_FUEL_FLOW
+        AP_Param::setup_object_defaults(&fuel_flow, fuel_flow.var_info);
+#endif
 #ifdef HAL_PERIPH_ENABLE_RANGEFINDER
         AP_Param::setup_object_defaults(&rangefinder, rangefinder.var_info);
 #endif
@@ -1714,6 +1717,74 @@ void AP_Periph_FW::apd_esc_telem_update()
 #endif // HAL_PERIPH_ENABLE_ESC_APD
 #endif // HAL_PERIPH_ENABLE_RC_OUT
 
+
+#ifdef HAL_PERIPH_ENABLE_ROTATION_SENSOR
+void AP_Periph_FW::can_fads_update(void)
+{
+    if (!rot_sensor.enabled())
+    {
+        return;
+    }
+
+    uint32_t now = AP_HAL::millis();
+    if (now - last_fads_update_ms < rot_sensor.get_update_rate())
+    {
+        // max 20Hz data
+        return;
+    }
+
+    last_fads_update_ms = now;
+    rot_sensor.update();
+    
+
+    if(rot_sensor.battery_address() > 0){
+        uavcan_equipment_power_BatteryInfo pkt {};
+        pkt.battery_id = rot_sensor.battery_address();
+        pkt.voltage = rot_sensor.aos_rads();
+        pkt.current = rot_sensor.aoa_rads();
+        
+        uint8_t buffer[UAVCAN_EQUIPMENT_POWER_BATTERYINFO_MAX_SIZE] {};
+        const uint16_t total_size = uavcan_equipment_power_BatteryInfo_encode(&pkt, buffer, !periph.canfdout());
+
+        canard_broadcast(UAVCAN_EQUIPMENT_POWER_BATTERYINFO_SIGNATURE,
+                        UAVCAN_EQUIPMENT_POWER_BATTERYINFO_ID,
+                        CANARD_TRANSFER_PRIORITY_LOW,
+                        &buffer[0],
+                        total_size);
+    }else{
+
+        uavcan_equipment_air_data_AngleOfAttack aoa_pkt = {0};
+
+        aoa_pkt.sensor_id = UAVCAN_EQUIPMENT_AIR_DATA_ANGLEOFATTACK_SENSOR_ID_LEFT;
+        aoa_pkt.aoa = rot_sensor.aoa_rads();
+
+        uint8_t aoa_buffer[UAVCAN_EQUIPMENT_AIR_DATA_ANGLEOFATTACK_MAX_SIZE]{};
+
+        uint16_t total_size = uavcan_equipment_air_data_AngleOfAttack_encode(&aoa_pkt, aoa_buffer, !periph.canfdout());
+
+        canard_broadcast(UAVCAN_EQUIPMENT_AIR_DATA_ANGLEOFATTACK_SIGNATURE,
+                        UAVCAN_EQUIPMENT_AIR_DATA_ANGLEOFATTACK_ID,
+                        CANARD_TRANSFER_PRIORITY_LOW,
+                        aoa_buffer,
+                        total_size);
+
+        uavcan_equipment_air_data_Sideslip aos_pkt = {0};
+
+        aos_pkt.sideslip_angle = rot_sensor.aos_rads();
+
+        uint8_t aos_buffer[UAVCAN_EQUIPMENT_AIR_DATA_SIDESLIP_MAX_SIZE]{};
+
+        total_size = uavcan_equipment_air_data_Sideslip_encode(&aos_pkt, aos_buffer, !periph.canfdout());
+
+        canard_broadcast(UAVCAN_EQUIPMENT_AIR_DATA_SIDESLIP_SIGNATURE,
+                        UAVCAN_EQUIPMENT_AIR_DATA_SIDESLIP_ID,
+                        CANARD_TRANSFER_PRIORITY_LOW,
+                        aos_buffer,
+                        total_size);
+    }
+}
+#endif // HAL_PERIPH_ENABLE_ROTATION_SENSOR
+
 void AP_Periph_FW::can_update()
 {
     const uint32_t now = AP_HAL::millis();
@@ -1769,6 +1840,9 @@ void AP_Periph_FW::can_update()
 #ifdef HAL_PERIPH_ENABLE_AIRSPEED
         can_airspeed_update();
 #endif
+#ifdef HAL_PERIPH_ENABLE_FUEL_FLOW
+        can_fuel_flow_update(); 
+#endif
 #ifdef HAL_PERIPH_ENABLE_RANGEFINDER
         can_rangefinder_update();
 #endif
@@ -1804,6 +1878,9 @@ void AP_Periph_FW::can_update()
     #endif
     #ifdef HAL_PERIPH_ENABLE_EFI
         can_efi_update();
+    #endif
+    #ifdef HAL_PERIPH_ENABLE_ROTATION_SENSOR
+        can_fads_update();
     #endif
     }
     const uint32_t now_us = AP_HAL::micros();

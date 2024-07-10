@@ -1,0 +1,21 @@
+include ../MatekL431/hwdef.inc
+
+define CAN_APP_NODE_NAME "org.ardupilot.MatekL431-FADS"
+
+STDOUT_SERIAL SD2
+STDOUT_BAUDRATE 57600
+
+define HAL_USE_ADC FALSE
+define STM32_ADC_USE_ADC1 FALSE
+define HAL_DISABLE_ADC_DRIVER TRUE
+
+define HAL_I2C_MAX_CLOCK 400000
+define HAL_PERIPH_ENABLE_ROTATION_SENSOR 1
+
+# ------------------ I2C airspeed -------------------------
+define HAL_PERIPH_ENABLE_AIRSPEED
+
+# 10" DLVR sensor by default
+define HAL_AIRSPEED_TYPE_DEFAULT 9  
+define AIRSPEED_MAX_SENSORS 1
+

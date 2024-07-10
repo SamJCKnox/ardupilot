@@ -166,6 +166,11 @@ void AP_Periph_FW::init()
     battery_lib.init();
 #endif
 
+#ifdef HAL_PERIPH_ENABLE_ROTATION_SENSOR
+    rot_sensor.init();
+#endif
+
+
 #ifdef HAL_PERIPH_ENABLE_RCIN
     rcin_init();
 #endif
@@ -224,6 +229,11 @@ void AP_Periph_FW::init()
 #endif
 
 #endif
+
+#ifdef HAL_PERIPH_ENABLE_FUEL_FLOW  
+    fuel_flow.init();
+#endif
+
 
 #ifdef HAL_PERIPH_ENABLE_RANGEFINDER
     if (rangefinder.get_type(0) != RangeFinder::Type::NONE)
