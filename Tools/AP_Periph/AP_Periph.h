@@ -37,7 +37,7 @@
 #include "rc_in.h"
 #include "batt_balance.h"
 #include <AP_RotationSensor/AP_RotationSensor.h>
-#include <AP_FuelFlow/AP_Sensirion_FuelFlow.h>
+#include <AP_FuelFlow/AP_Senserion_FuelFlow.h>
 
 #include <AP_NMEA_Output/AP_NMEA_Output.h>
 #if HAL_NMEA_OUTPUT_ENABLED && !(HAL_GCS_ENABLED && defined(HAL_PERIPH_ENABLE_GPS))
