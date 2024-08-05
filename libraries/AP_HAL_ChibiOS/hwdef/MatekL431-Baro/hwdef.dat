@@ -1,0 +1,12 @@
+include ../MatekL431/hwdef.inc
+
+# ------------------ Baro -----------------------
+define HAL_PERIPH_ENABLE_BARO
+define AP_BARO_MPRLS_ENABLED 1
+
+
+# disable unnecessary threads
+define HAL_NO_MONITOR_THREAD
+define HAL_NO_RCIN_THREAD
+define HAL_NO_RCOUT_THREAD
+define HAL_NO_TIMER_THREAD
