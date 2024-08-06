@@ -19,9 +19,12 @@
 #include <utility>
 #include <stdio.h>
 
-#include <AP_Math/AP_Math.h>
-#include <AP_Math/crc.h>
-#include <AP_BoardConfig/AP_BoardConfig.h>
+// Hacky but we need to be able to do this without including AP_Periph.h
+extern "C"
+{
+    void can_printf(const char *fmt, ...) FMT_PRINTF(1, 2);
+}
+
 
 extern const AP_HAL::HAL &hal;
 
@@ -31,31 +34,27 @@ extern const AP_HAL::HAL &hal;
 #define MPRLS_STATUS_BUSY       (0x20)    
 #define MPRLS_STATUS_FAILED     (0x04)  
 #define MPRLS_STATUS_MATHSAT    (0x01) 
-#define COUNTS_224              (16777216L)      
+     
 #define PSI_to_PA               (6894.7572932)   
 #define MPRLS_STATUS_MASK       (0b01100101) 
 
-#define OUTPUT_MIN              (uint32_t)((float)COUNTS_224 * (10 / 100.0) + 0.5);
-#define OUTPUT_MAX              (uint32_t)((float)COUNTS_224 * (90 / 100.0) + 0.5);
-#define PSI_MIN                 (0)
-#define PSI_MAX                 (25)
-
-AP_Baro_MPRLS::AP_Baro_MPRLS(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::Device> _dev)
+AP_Baro_MPRLS::AP_Baro_MPRLS(AP_Baro &baro, AP_HAL::OwnPtr<AP_HAL::Device> dev)
     : AP_Baro_Backend(baro)
-    , _dev(std::move(_dev))
+    , _dev(std::move(dev))
 {
 }
 
 AP_Baro_Backend *AP_Baro_MPRLS::probe(AP_Baro &baro,
-                                       AP_HAL::OwnPtr<AP_HAL::Device> _dev)
+                                       AP_HAL::OwnPtr<AP_HAL::Device> dev)
 {
-    if (!_dev) {
+    if (!dev) {
         return nullptr;
     }
 
-    AP_Baro_MPRLS *sensor = new AP_Baro_MPRLS(baro, std::move(_dev));
+    AP_Baro_MPRLS *sensor = new AP_Baro_MPRLS(baro, std::move(dev));
     if (!sensor || !sensor->_init()) {
         delete sensor;
+        can_printf("1Here");
         return nullptr;
     }
     return sensor;
@@ -69,9 +68,15 @@ bool AP_Baro_MPRLS::_init()
     WITH_SEMAPHORE(_dev->get_semaphore());
 
     _dev->set_speed(AP_HAL::Device::SPEED_HIGH);
+    can_printf("Here");
 
-    _dev->setup_checked_registers(2, 20);
+    // TODO check if the device is connected
 
+    //_dev->setup_checked_registers(2, 20);
+    uint8_t sendBuf[3] = {0xAA, 0x00, 0x00};
+    uint8_t buf[1];
+    _dev->read_registers(*sendBuf, buf, 1);
+    
     _instance = _frontend.register_sensor();
 
     _dev->set_device_type(DEVTYPE_BARO_MPRLS);
@@ -90,7 +95,8 @@ void AP_Baro_MPRLS::_timer(void)
     uint8_t buf[7];
 
     _dev->read_registers(MPRLS_BUF_ADDR, buf, sizeof(buf));
-      // check status byte
+
+    // check status byte
     if (buf[0] & MPRLS_STATUS_MATHSAT) {
         return;
     }
@@ -98,27 +104,27 @@ void AP_Baro_MPRLS::_timer(void)
         return;
     }
 
-    _update_pressure(uint32_t(buf[1]) << 16) | (uint32_t(buf[2]) << 8) |
-         (uint32_t(buf[3]));
-    _update_temperature(uint32_t(buf[4]) << 16) | (uint32_t(buf[5]) << 8) |
-         (uint32_t(buf[6]));
+    _update_pressure((uint32_t(buf[1]) << 16) | (uint32_t(buf[2]) << 8) |
+         (uint32_t(buf[3])));
+    _update_temperature((uint32_t(buf[4]) << 16) | (uint32_t(buf[5]) << 8) |
+         (uint32_t(buf[6])));
 
     _dev->check_next_register();
 }
 
-void AP_Baro_MPRLS::_update_pressure(uint32 raw_press){
-        if (raw_press == 0xFFFFFFFF ||  OUTPUT_MIN == OUTPUT_MAX) {
-            return;
-        }
-    float raw_psi =  (raw_press / 16777215) * 100;
+void AP_Baro_MPRLS::_update_pressure(uint32_t raw_press){
+    can_printf("Here3");
+    if (raw_press == 0xFFFFFFFF) {
+        return;
+    }
 
     // All is good, calculate and convert to desired units using provided factor
     // use the 10-90 calibration curve by default or whatever provided by the user
-    float psi = (raw_psi - OUTPUT_MIN) * (PSI_MAX - PSI_MIN);
-    psi /= (float)(OUTPUT_MAX - OUTPUT_MIN);
-    psi += PSI_MIN;
+    float psi = (float)(raw_press - _output_min) * (_psi_max - _psi_min);
+    psi /= (float)(_output_max - _output_min);
+    psi += _psi_min;
     // convert to desired units
-    _pressure_sum += psi * PSI_to_HPA;
+    _pressure_sum += psi * PSI_to_PA;
     _pressure_count++;
 }
 
@@ -131,6 +137,7 @@ void AP_Baro_MPRLS::_update_temperature(uint32_t raw_temp)
 // transfer data to the frontend
 void AP_Baro_MPRLS::update(void)
 {
+    can_printf("Here2");
     WITH_SEMAPHORE(_sem);
 
     _copy_to_frontend(_instance,

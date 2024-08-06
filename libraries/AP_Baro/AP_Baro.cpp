@@ -48,6 +48,7 @@
 #include "AP_Baro_ExternalAHRS.h"
 #include "AP_Baro_ICP101XX.h"
 #include "AP_Baro_ICP201XX.h"
+#include "AP_Baro_MPRLS.h"
 
 #include <AP_Airspeed/AP_Airspeed.h>
 #include <AP_AHRS/AP_AHRS.h>
@@ -73,6 +74,12 @@
 #ifdef HAL_BUILD_AP_PERIPH
 #define HAL_BARO_ALLOW_INIT_NO_BARO
 #endif
+
+// Hacky but we need to be able to do this without including AP_Periph.h
+extern "C"
+{
+    void can_printf(const char *fmt, ...) FMT_PRINTF(1, 2);
+}
 
 extern const AP_HAL::HAL& hal;
 
@@ -742,6 +749,11 @@ void AP_Baro::init(void)
 
     // can optionally have baro on I2C too
     if (_ext_bus >= 0) {
+
+#if AP_BARO_MPRLS_ENABLED
+        ADD_BACKEND(AP_Baro_MPRLS::probe(*this,
+                                         std::move(GET_I2C_DEVICE(_ext_bus, HAL_BARO_MPRLS_I2C_ADDR))));
+#endif
 #if APM_BUILD_TYPE(APM_BUILD_ArduSub)
 #if AP_BARO_MS56XX_ENABLED
         ADD_BACKEND(AP_Baro_MS56XX::probe(*this,
@@ -868,11 +880,14 @@ void AP_Baro::_probe_i2c_barometers(void)
 
     for (const auto &spec : baroprobespec) {
         if (!(probe & spec.bit)) {
+            can_printf("Not: %d", (int)spec.bit);
             // not in mask to be probed for
             continue;
         }
         FOREACH_I2C_MASK(i, mask) {
             ADD_BACKEND(spec.probefn(*this, std::move(GET_I2C_DEVICE(i, spec.addr))));
+            can_printf("Inc: %d", (int)spec.bit);
+            can_printf("Add: %d", (int)spec.addr);
         }
     }
 }
