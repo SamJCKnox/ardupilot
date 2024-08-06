@@ -33,20 +33,35 @@ void AP_Periph_FW::can_temp_update(void)
         return;
     }
 
-    uavcan_equipment_device_Temperature pkt {};
+    uavcan_protocol_debug_KeyValue pkt{};
+    pkt.value = temp;
+    //pkt.key = temperature_sensor.get_source_id(i);
+    pkt.key.data[0] = temperature_sensor.get_source_id(i);
+    pkt.key.len = 1;
 
-    pkt.temperature = temp;
-    pkt.device_id = temperature_sensor.get_source_id(i);
+    uint8_t buffer[UAVCAN_PROTOCOL_DEBUG_KEYVALUE_MAX_SIZE] {};
+    uint16_t total_size = uavcan_protocol_debug_KeyValue_encode(&pkt, buffer, !periph.canfdout());
+
+    canard_broadcast(UAVCAN_PROTOCOL_DEBUG_KEYVALUE_SIGNATURE,
+                UAVCAN_PROTOCOL_DEBUG_KEYVALUE_ID,
+                CANARD_TRANSFER_PRIORITY_LOW,
+                &buffer[0],
+                total_size);
+
+    // uavcan_equipment_device_Temperature pkt {};
+
+    // pkt.temperature = temp;
+    // pkt.device_id = temperature_sensor.get_source_id(i);
 
 
-    uint8_t buffer[UAVCAN_EQUIPMENT_DEVICE_TEMPERATURE_MAX_SIZE] {};
-    uint16_t total_size = uavcan_equipment_device_Temperature_encode(&pkt, buffer, !periph.canfdout());
+    // uint8_t buffer[UAVCAN_EQUIPMENT_DEVICE_TEMPERATURE_MAX_SIZE] {};
+    // uint16_t total_size = uavcan_equipment_device_Temperature_encode(&pkt, buffer, !periph.canfdout());
 
-    canard_broadcast(UAVCAN_EQUIPMENT_DEVICE_TEMPERATURE_SIGNATURE,
-                    UAVCAN_EQUIPMENT_DEVICE_TEMPERATURE_ID,
-                    CANARD_TRANSFER_PRIORITY_LOW,
-                    &buffer[0],
-                    total_size);
+    // canard_broadcast(UAVCAN_EQUIPMENT_DEVICE_TEMPERATURE_SIGNATURE,
+    //                 UAVCAN_EQUIPMENT_DEVICE_TEMPERATURE_ID,
+    //                 CANARD_TRANSFER_PRIORITY_LOW,
+    //                 &buffer[0],
+    //                 total_size);
 }
 }
 
